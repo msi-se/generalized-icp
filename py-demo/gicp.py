@@ -553,7 +553,7 @@ if __name__ == '__main__':
     # b_data = [[0.3,1.0],[0.3,1.1],[0.3,1.2],[0.31,1.3],[0.3,1.4],[0.3,1.5],[0.3,1.6]]
     a_data = generate_square_points(square_center, square_size, num_points_square_side)
 
-    b_data_offset = [50, 50, np.pi / 6]
+    b_data_offset = [20, 20, np.pi / 20]
     b_data = [dispPoint(p, b_data_offset) for p in a_data]
 
     # run generalized ICP (a plot is made for each iteration of the algorithm)
@@ -577,7 +577,7 @@ if __name__ == '__main__':
     else:
         raise Exception("Transformation matrix is incorrect")
 
-    quit()
+    # quit()
 
     pygame.init()
     width, height = 800, 600
