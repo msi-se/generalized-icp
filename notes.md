@@ -25,3 +25,16 @@ Alternative GICP Implementierungen:
   - Vergleich mit normalem ICP (Versuch)
   - Fazit
 - Implementierung
+
+
+### ROS-Implementierung
+
+- The approach is based on using anistropic cost functions to optimize the alignment after closest point assignments have been made.
+- The original code uses GSL and ANN while in ours we use an eigen mapped BFGS and FLANN
+
+
+
+
+
+Icp mit liearer Optimierungsfunktion
+Gicp mit 
