@@ -521,16 +521,28 @@ def draw_points(points, color):
     for point in points:
         pygame.draw.circle(screen, color, point, 3)
 
+def are_same_matrix(m1, m2, tol=1e-6):
+    if m1.shape != m2.shape:
+        return False
+    for i in range(m1.shape[0]):
+        if not np.allclose(m1[i], m2[i], atol=tol):
+            return False
+    return True
+
+
+def offset_to_transformation_matrix(offset):
+    xd = offset[0]
+    yd = offset[1]
+    theta = offset[2]
+
+    T = np.matrix([    [math.cos(theta), -math.sin(theta), xd],
+            [math.sin(theta), math.cos(theta), yd],
+            [0.0, 0.0, 1.0]
+            ])
+
+    return T
+
 if __name__ == '__main__':
-
-    # TUNE ME:  threshold cost difference between iterations to determine if converged
-    costThresh = 1
-
-    # TUNE ME:   minimum match distance before point is discarded from consideration
-    minMatchDist = 100
-
-    # initial guess for x, y, theta parameters
-    offset = [0, 0, 0]
 
     # sample data
     square_center = (400, 250)
@@ -540,16 +552,36 @@ if __name__ == '__main__':
     # a_data = [[1.0,1.0],[1.1,1.1],[1.2,1.2],[1.3,1.31],[1.4,1.4],[1.51,1.5],[1.6,1.6],[1.7,1.7]]
     # b_data = [[0.3,1.0],[0.3,1.1],[0.3,1.2],[0.31,1.3],[0.3,1.4],[0.3,1.5],[0.3,1.6]]
     a_data = generate_square_points(square_center, square_size, num_points_square_side)
-    b_data = [dispPoint(p, [150, -50, np.pi / 6]) for p in a_data]
+
+    b_data_offset = [50, 50, np.pi / 6]
+    b_data = [dispPoint(p, b_data_offset) for p in a_data]
 
     # run generalized ICP (a plot is made for each iteration of the algorithm)
     # deep copy the data so we can keep the original data
     copy_a = deepcopy(a_data)
     copy_b = deepcopy(b_data)
-    offset, all_offsets = gen_ICP(offset, copy_a, copy_b, costThresh, minMatchDist)
+    offset, all_offsets = gen_ICP([0, 0, 0], copy_a, copy_b, costThresh=1, minMatchDist=100)
+
+    # get the transformation matrix
+    T = offset_to_transformation_matrix(offset)
+    T_expected = offset_to_transformation_matrix(b_data_offset)
+
+    print("Expected transformation matrix:")
+    print(T_expected)
+    print("Actual transformation matrix:")
+    print(T)
+
+    # check if the transformation matrix is correct
+    if are_same_matrix(T, T_expected, tol=1e-7):
+        print("Transformation matrix is correct")
+    else:
+        raise Exception("Transformation matrix is incorrect")
+
+    quit()
+
     pygame.init()
     width, height = 800, 600
-    screen = pygame.display.set_mode((width, height))
+    screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
     pygame.display.set_caption("GICP Algorithm Visualization")
 
     black = (0, 0, 0)
