@@ -125,99 +125,100 @@ def generate_circle_points(center, radius, num_points):
         points.append([x, y])
     return np.array(points)
 
-circle_center = (300, 150)
-circle_radius = 100
-num_points_circle = 30
+if __name__ == "__main__":
+    circle_center = (300, 150)
+    circle_radius = 100
+    num_points_circle = 30
 
-square_center = (600, 250)
-square_size = 200
-num_points_square_side = 10
+    square_center = (600, 250)
+    square_size = 200
+    num_points_square_side = 10
 
-source_points_circle = generate_circle_points(circle_center, circle_radius, num_points_circle)
-source_points_square = generate_square_points(square_center, square_size, num_points_square_side)
+    source_points_circle = generate_circle_points(circle_center, circle_radius, num_points_circle)
+    source_points_square = generate_square_points(square_center, square_size, num_points_square_side)
 
-source_points = np.concatenate([source_points_circle, source_points_square])
+    source_points = np.concatenate([source_points_circle, source_points_square])
 
-def transform_points(points, translation, angle):
-    rot_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-    return np.dot(points, rot_matrix.T) + translation
+    def transform_points(points, translation, angle):
+        rot_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        return np.dot(points, rot_matrix.T) + translation
 
-translation = np.array([150, -50])
-rotation_angle = np.pi / 6
-target_points = transform_points(source_points, translation, rotation_angle)
-target_points += np.random.normal(0, 5, target_points.shape)
+    translation = np.array([150, -50])
+    rotation_angle = np.pi / 6
+    target_points = transform_points(source_points, translation, rotation_angle)
+    target_points += np.random.normal(0, 5, target_points.shape)
 
-def draw_points(points, color):
-    for point in points:
-        pygame.draw.circle(screen, color, point.astype(int), 3)
+    def draw_points(points, color):
+        for point in points:
+            pygame.draw.circle(screen, color, point.astype(int), 3)
 
-def draw_ellipse(surface, color, center, cov_matrix, n_std=2.0):
-    vals, vecs = np.linalg.eigh(cov_matrix)
-    vals = np.maximum(vals, 1e-6) 
-    order = vals.argsort()[::-1]
-    vals, vecs = vals[order], vecs[:, order]
-    
-    # Angle of rotation (theta)
-    largest_eigenvec = vecs[:, 0]
-    theta = np.arctan2(largest_eigenvec[1], largest_eigenvec[0])
-    theta_degrees = np.degrees(theta)
+    def draw_ellipse(surface, color, center, cov_matrix, n_std=2.0):
+        vals, vecs = np.linalg.eigh(cov_matrix)
+        vals = np.maximum(vals, 1e-6) 
+        order = vals.argsort()[::-1]
+        vals, vecs = vals[order], vecs[:, order]
+        
+        # Angle of rotation (theta)
+        largest_eigenvec = vecs[:, 0]
+        theta = np.arctan2(largest_eigenvec[1], largest_eigenvec[0])
+        theta_degrees = np.degrees(theta)
 
-    # Calculate width and height of the ellipse
-    width, height = 2 * n_std * np.sqrt(vals)
+        # Calculate width and height of the ellipse
+        width, height = 2 * n_std * np.sqrt(vals)
 
-    # Create the ellipse surface
-    ell = pygame.Surface((width, height), pygame.SRCALPHA)
-    pygame.draw.ellipse(ell, color, (0, 0, width, height), 2)
-    
-    # Rotate the ellipse surface
-    ell = pygame.transform.rotate(ell, -theta_degrees)
-    
-    # Calculate the new position to center the rotated ellipse
-    rotated_rect = ell.get_rect(center=center)
-    surface.blit(ell, rotated_rect)
+        # Create the ellipse surface
+        ell = pygame.Surface((width, height), pygame.SRCALPHA)
+        pygame.draw.ellipse(ell, color, (0, 0, width, height), 2)
+        
+        # Rotate the ellipse surface
+        ell = pygame.transform.rotate(ell, -theta_degrees)
+        
+        # Calculate the new position to center the rotated ellipse
+        rotated_rect = ell.get_rect(center=center)
+        surface.blit(ell, rotated_rect)
 
-pygame.init()
-width, height = 800, 600
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("GICP Algorithm Visualization")
+    pygame.init()
+    width, height = 800, 600
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("GICP Algorithm Visualization")
 
-black = (0, 0, 0)
-white = (255, 255, 255)
-red = (255, 0, 0)
-blue = (0, 0, 255)
-green = (0, 255, 0)
-yellow = (255, 255, 0)
+    black = (0, 0, 0)
+    white = (255, 255, 255)
+    red = (255, 0, 0)
+    blue = (0, 0, 255)
+    green = (0, 255, 0)
+    yellow = (255, 255, 0)
 
-running = True
-clock = pygame.time.Clock()
+    running = True
+    clock = pygame.time.Clock()
 
-T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
+    T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
 
-step = 0
-max_steps = len(all_transformations)
-while running:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            running = False
+    step = 0
+    max_steps = len(all_transformations)
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
 
-    screen.fill(black)
-    
-    if step < max_steps:
-        current_T = all_transformations[step]
-        transformed_source = apply_transformation(source_points, current_T)
-        step += 1
+        screen.fill(black)
+        
+        if step < max_steps:
+            current_T = all_transformations[step]
+            transformed_source = apply_transformation(source_points, current_T)
+            step += 1
 
-    draw_points(source_points, white)
-    draw_points(target_points, blue)
-    draw_points(transformed_source, red)
-    
-    for i, point in enumerate(source_points):
-        draw_ellipse(screen, yellow, point, source_cov_matrices[i])
-    
-    for i, point in enumerate(target_points):
-        draw_ellipse(screen, green, point, target_cov_matrices[i])
+        draw_points(source_points, white)
+        draw_points(target_points, blue)
+        draw_points(transformed_source, red)
+        
+        for i, point in enumerate(source_points):
+            draw_ellipse(screen, yellow, point, source_cov_matrices[i])
+        
+        for i, point in enumerate(target_points):
+            draw_ellipse(screen, green, point, target_cov_matrices[i])
 
-    pygame.display.flip()
-    clock.tick(1)
+        pygame.display.flip()
+        clock.tick(1)
 
-pygame.quit()
+    pygame.quit()

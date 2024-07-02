@@ -263,27 +263,28 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
 
     pygame.quit()
 
-circle_center = (300, 150)
-circle_radius = 100
-num_points_circle = 30
+if __name__ == "__main__":
+    circle_center = (300, 150)
+    circle_radius = 100
+    num_points_circle = 30
 
-square_center = (600, 250)
-square_size = 200
-num_points_square_side = 10
+    square_center = (600, 250)
+    square_size = 200
+    num_points_square_side = 10
 
-source_points_circle = generate_circle_points(circle_center, circle_radius, num_points_circle)
-source_points_square = generate_square_points(square_center, square_size, num_points_square_side)
+    source_points_circle = generate_circle_points(circle_center, circle_radius, num_points_circle)
+    source_points_square = generate_square_points(square_center, square_size, num_points_square_side)
 
-source_points = np.concatenate([source_points_circle, source_points_square])
+    source_points = np.concatenate([source_points_circle, source_points_square])
 
 
-translation = np.array([150, -50])
-rotation_angle = np.pi / 6
-target_points = transform_points(source_points, translation, rotation_angle)
+    translation = np.array([150, -50])
+    rotation_angle = np.pi / 6
+    target_points = transform_points(source_points, translation, rotation_angle)
 
-# add a small noise to the target points
-target_points += np.random.normal(0, 10, target_points.shape)
+    # add a small noise to the target points
+    target_points += np.random.normal(0, 10, target_points.shape)
 
-T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
+    T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
 
-visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices)
+    visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices)
