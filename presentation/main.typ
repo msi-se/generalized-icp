@@ -23,7 +23,7 @@
   // space
   #v(5cm)
 
-  Moritz Kaltenstadler, Fabian Klimpel, Johannes Brandenburger
+  Johannes Brandenburger, Moritz Kaltenstadler, Fabian Klimpel
 ]
 
 #slide[
@@ -40,6 +40,33 @@
     + ...
   + Fazit
 ]
+
+
+#slide[
+  = Theorie
+
+  #grid(
+    columns: 2,
+    [
+    - "point-to-point" (Standard-ICP)
+    - "point-to-plane"
+      - vergleicht Punkt mit Ebene durch Normalenvektor
+    - Generalized-ICP
+      - quasi "plane-to-plane"
+      - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
+      - wenn in Ebene → Kovarianzmatrix ist "flach"
+  ], [
+    #figure(
+      caption: "Kovarianzmatrizen (eigene Darstellung)",
+      [
+        #image("./assets/cov-matr.png", width: 100%)
+      ]
+    )
+  ])
+  
+  #v(1cm)
+]
+
 
 #slide[
   = Theorie
@@ -60,38 +87,16 @@
   ]
 ]
 
-#slide[
-  = Theorie
-
-  #grid(
-    columns: 2,
-    [
-    - "point-to-point" (Standard-ICP)
-    - "point-to-plane"
-      - vergleicht Punkt mit Ebene nurch Normalenvektor
-    - Generalized-ICP
-      - quasi "plane-to-plane"
-      - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
-      - wenn in Ebene → Kovarianzmatrix ist "flach"
-  ], [
-    #figure(
-      caption: "Kovarianzmatrizen (eigene Darstellung)",
-      [
-        #image("./assets/cov-matr.png", width: 100%)
-      ]
-    )
-  ])
-  
-  #v(1cm)
-
-]
 
 #slide[
-  = Demo: Eigene Implementierung in Python - Code
+  = Demo: Eigene Implementierung in Python
 
   - Paper sehr mathematisch
   - Algorithmus wurde nie komplett gezeigt
   - zwar Implementierungen auf GitHub, aber nicht wirklich lesbar
+
+  #v(0.5cm)
+
   - daher eigene Implementierung - vor allem für Verständnis
   - eigene *2D-GICP-Funktion*
     - Input: Punktwolken $A$ und $B$, ...
@@ -106,8 +111,4 @@
   #v(1cm)
 
   #emph[$->$ LIVE DEMO]
-]
-
-#slide[
-  = Demo: Eigene Implementierung in Python - Ergebnis
 ]
