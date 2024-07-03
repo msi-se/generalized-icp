@@ -22,8 +22,8 @@ NUM_RAYS = 90
 MAX_RAY_RANGE = 400
 ROBOT_YAW_SPEED = 1
 RIGHT_SIDE_WIDTH = SCREEN_WIDTH // 2
-NOISE = 1
-GICP_N_TICKS = 5
+NOISE = 2
+GICP_N_TICKS = 10
 
 # Set up the display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -196,9 +196,8 @@ while running:
         source_points = target_points
         target_points = points
         if len(source_points) > 0 and len(target_points) > 0:
-            limit = min(len(source_points), len(target_points))
-            _source_points = [rel_intersection for rel_intersection, _ in source_points[:limit]]
-            _target_points = [rel_intersection for rel_intersection, _ in target_points[:limit]]
+            _source_points = [rel_intersection for rel_intersection, _ in source_points]
+            _target_points = [rel_intersection for rel_intersection, _ in target_points]
             transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(_source_points, _target_points)
             print(len(source_cov_matrices))
     
@@ -235,12 +234,20 @@ while running:
         # Draw on the right side
         draw_x = RIGHT_SIDE_WIDTH // 2 + rel_intersection[0]
         draw_y = SCREEN_HEIGHT // 2 + rel_intersection[1]
-        pygame.draw.circle(right_side, INTERSECTION_COLOR, (int(draw_x), int(draw_y)), 3)
+        pygame.draw.circle(right_side, (0, 0, 255), (int(draw_x), int(draw_y)), 3)
         if len(target_cov_matrices) > i:
-            draw_ellipse(right_side, INTERSECTION_COLOR, (int(draw_x), int(draw_y)), target_cov_matrices[i])
+            draw_ellipse(right_side, (128, 128, 255), (int(draw_x), int(draw_y)), target_cov_matrices[i])
     
     # apple transformation_matrixs to source points and draw them
     if len(transformation_matrix) > 0:
+        for i, (rel_intersection, _) in enumerate(source_points):
+            draw_x = RIGHT_SIDE_WIDTH // 2 + rel_intersection[0]
+            draw_y = SCREEN_HEIGHT // 2 + rel_intersection[1]
+            pygame.draw.circle(right_side, (192, 192, 192), (int(draw_x), int(draw_y)), 3)
+            if len(source_cov_matrices) > i:
+                draw_ellipse(right_side, (192, 192, 192), (int(draw_x), int(draw_y)), source_cov_matrices[i])
+
+        # Draw transformed source points
         rel_intersections = np.asarray([[rel_intersection[0], rel_intersection[1]] for rel_intersection, _ in source_points])
         transformed_points = apply_transformation(rel_intersections, transformation_matrix)
         for i, transformed_point in enumerate(transformed_points):
