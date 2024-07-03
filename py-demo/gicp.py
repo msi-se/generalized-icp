@@ -7,13 +7,15 @@ from scipy.optimize import fmin_cg
 
 
 def compute_covariance_matrix(points, neighbors):
-    cov_matrices = []
-    for i in range(len(points)):
-        cov_matrix = np.cov(neighbors[i].T)
-        cov_matrices.append(cov_matrix)
-    return np.array(cov_matrices)
+    """Compute the covariance matrices for each point in the cloud."""
+    num_points = len(points)
+    cov_matrices = np.zeros((num_points, 2, 2))
+    for i in range(num_points):
+        cov_matrices[i] = np.cov(neighbors[i].T)
+    return cov_matrices
 
-def nearest_neighbors(source_points, target_points, k=4):
+def nearest_neighbors(source_points, target_points, k=6):
+    """Find the k nearest neighbors of each point in the source cloud."""
     tree = KDTree(target_points)
     distances, indices = tree.query(source_points, k=k)
     neighbors = target_points[indices]
@@ -39,53 +41,100 @@ def grad_loss(x, a, b, M):
     g = np.zeros(3)
     residual = b - a @ R.T - t
     tmp = np.sum(M * residual[:, None, :], axis=2)
-    
     g[:2] = -2 * np.sum(tmp, axis=0)
-    
     grad_R = -2 * (tmp.T @ a)
     grad_R_theta = np.array([[-np.sin(x[2]), -np.cos(x[2])], [np.cos(x[2]), -np.sin(x[2])]])
     g[2] = np.sum(grad_R * grad_R_theta)
-    
     return g
 
+def offset_to_transformation_matrix(offset):
+    """Convert the offset parameters (tx, ty, theta) to a transformation matrix."""
+    translation = offset[:2]
+    theta = offset[2]
+    rotation_matrix = rot_mat(theta)
+    transformation_matrix = np.eye(3)
+    transformation_matrix[:2, :2] = rotation_matrix
+    transformation_matrix[:2, 2] = translation
+    return transformation_matrix
+
 def gicp(source_points, target_points, max_iterations=20, tolerance=1e-6, epsilon=1e-6):
+    """
+    Generalized Iterative Closest Point (GICP) algorithm to align two 2D point clouds.
+    :param source_points: Source point cloud (Nx2)
+    :param target_points: Target point cloud (Nx2)
+    :param max_iterations: Maximum number of iterations
+    :param tolerance: Tolerance for convergence
+    :param epsilon: Small value to avoid numerical issues
+    :return: Transformation matrix, all transformations, source covariance matrices, target covariance matrices
+
+    Algorithm from the Stanford paper
+        Generalized-ICP (Segal, Haehnel, Thrun)
+
+        Input: Two point clouds: A = {ai}, B = {bi}
+        An initial transformation: T0
+
+        Output: The correct transformation, T, which aligns A and B
+
+        1: T ← T0
+        2: while not converged do
+        3:     for i ← 1 to N do
+        4:         mi ← FindClosestPointInA(T · bi)
+        5:         if ||mi - T · bi|| ≤ dmax then
+        6:             wi ← 1
+        7:         else
+        8:             wi ← 0
+        9:         end if
+        10:    end for
+        11:    T ← argmin_T Σi (di^T (C_Bi + T C_Ai T^T)^-1 di)
+        12: end while
+
+    """
+
+    # Convert points to numpy arrays if they are not already
     source_points = np.asarray(source_points)
     target_points = np.asarray(target_points)
 
+    # Compute nearest neighbors and covariance matrices
     source_neighbors = nearest_neighbors(source_points, source_points)
     target_neighbors = nearest_neighbors(target_points, target_points)
-
     source_cov_matrices = compute_covariance_matrix(source_points, source_neighbors)
     target_cov_matrices = compute_covariance_matrix(target_points, target_neighbors)
 
+    # Initialize transformation matrix and parameters
     transformation_matrix = np.eye(3)
     all_transformations = [transformation_matrix]
+    offset = np.zeros(3)  # Parameters: [tx, ty, theta]
+    last_min_loss = np.inf
 
-    x = np.zeros(3)  # Parameters: [tx, ty, theta]
-
-    last_min = np.inf
     for iteration in range(max_iterations):
-        R = rot_mat(x[2])
-        M = np.array([np.linalg.inv(target_cov_matrices[i] + R @ source_cov_matrices[i] @ R.T + epsilon * np.eye(2))
-                      for i in range(len(source_points))])
 
-        f = lambda x: loss(x, source_points, target_points, M)
-        df = lambda x: grad_loss(x, source_points, target_points, M)
+        # Questions:
+        # Do we need to add noise?
 
-        out = fmin_cg(f=f, x0=x, fprime=df, disp=False, full_output=True)
-        x = out[0]
-        f_min = out[1]
+        rotation_matrix = rot_mat(offset[2])
 
-        if np.abs(last_min - f_min) < tolerance:
+        # Compute weight weight matrices (inverse of the sum of the covariance matrices of the target points)
+        weight_matrices = np.zeros((len(source_points), 2, 2))
+        for i in range(len(source_points)):
+            combined_cov_matrix = target_cov_matrices[i] + rotation_matrix @ source_cov_matrices[i] @ rotation_matrix.T + epsilon * np.eye(2)
+            weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
+
+        # Minimize the loss function / cost function using a nonlinear conjugate gradient algorithm
+        loss_function = lambda x: loss(x, source_points, target_points, weight_matrices)
+        grad_loss_function = lambda x: grad_loss(x, source_points, target_points, weight_matrices)
+        # x0 parameter: last offset -> ITERATIVE closest point
+        out = fmin_cg(f=loss_function, x0=offset, fprime=grad_loss_function, disp=False, full_output=True)
+        offset = out[0]
+        min_loss = out[1]
+
+        # Check for convergence
+        if np.abs(last_min_loss - min_loss) < tolerance:
+            print("Converged at iteration", iteration)
             break
-        last_min = f_min
 
-        t = x[:2]
-        theta = x[2]
-        R = rot_mat(theta)
-        transformation_matrix = np.eye(3)
-        transformation_matrix[:2, :2] = R
-        transformation_matrix[:2, 2] = t
+        # Update transformation matrix
+        last_min_loss = min_loss
+        transformation_matrix = offset_to_transformation_matrix(offset)
         all_transformations.append(transformation_matrix)
 
     return transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices
