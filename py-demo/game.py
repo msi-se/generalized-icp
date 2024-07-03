@@ -267,7 +267,8 @@ def main():
         # Draw the circle on the right side
         circle_center = (RIGHT_SIDE_WIDTH // 2, SCREEN_HEIGHT // 2)
         pygame.draw.circle(right_side, (255, 255, 255), circle_center, MAX_RAY_RANGE)
-        pygame.draw.circle(right_side, (200, 200, 200), circle_center, ROBOT_SIZE)
+        pygame.draw.circle(right_side, ROBOT_COLOR, circle_center, ROBOT_SIZE)
+        pygame.draw.line(right_side, (0, 0, 0), circle_center, (circle_center[0] + ROBOT_SIZE, circle_center[1]), 2)
 
         # Draw the rays and intersections
         for _, abs_intersection in points:
