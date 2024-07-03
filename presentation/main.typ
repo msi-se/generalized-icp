@@ -9,7 +9,8 @@
 )
 #show: template
 
-#set text(16pt)
+#set text(size: 16pt)
+#set text(lang: "de")
 
 #title-slide[
   = Generalized Iterative Closest Point
@@ -60,7 +61,51 @@
 ]
 
 #slide[
+  = Theorie
+
+  #grid(
+    columns: 2,
+    [
+    - "point-to-point" (Standard-ICP)
+    - "point-to-plane"
+      - vergleicht Punkt mit Ebene nurch Normalenvektor
+    - Generalized-ICP
+      - quasi "plane-to-plane"
+      - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
+      - wenn in Ebene → Kovarianzmatrix ist "flach"
+  ], [
+    #figure(
+      caption: "Kovarianzmatrizen (eigene Darstellung)",
+      [
+        #image("./assets/cov-matr.png", width: 100%)
+      ]
+    )
+  ])
+  
+  #v(1cm)
+
+]
+
+#slide[
   = Demo: Eigene Implementierung in Python - Code
+
+  - Paper sehr mathematisch
+  - Algorithmus wurde nie komplett gezeigt
+  - zwar Implementierungen auf GitHub, aber nicht wirklich lesbar
+  - daher eigene Implementierung - vor allem für Verständnis
+  - eigene *2D-GICP-Funktion*
+    - Input: Punktwolken $A$ und $B$, ...
+    - Output: Transformationsmatrix $T$, ...
+  - Version 1:
+    - Visualisierung mit generierten Input-Wolken
+    - iterativ durch die Steps klicken
+  - Version 2:
+    - Simulation eines Roboters mit LiDAR-Sensor
+    - Live-Berechnung der Transformation + Visualisierung
+
+  #v(1cm)
+
+  #emph[$->$ LIVE DEMO]
 ]
 
 #slide[
