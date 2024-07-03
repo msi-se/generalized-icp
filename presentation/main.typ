@@ -9,7 +9,7 @@
 )
 #show: template
 
-#set text(18pt)
+#set text(16pt)
 
 #title-slide[
   = Generalized Iterative Closest Point
@@ -60,4 +60,9 @@
 ]
 
 #slide[
+  = Demo: Eigene Implementierung in Python - Code
+]
+
+#slide[
+  = Demo: Eigene Implementierung in Python - Ergebnis
 ]

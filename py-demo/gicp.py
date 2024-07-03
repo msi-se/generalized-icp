@@ -98,27 +98,29 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
     source_points = np.asarray(source_points)
     target_points = np.asarray(target_points)
 
-    # Compute nearest neighbors and covariance matrices
+    # Compute nearest neighbors and covariance matrices of the target points
     target_cov_matrices = compute_covariance_matrix(target_points, max_distance_nearest_neighbors)
 
-    # Initialize transformation matrix and parameters
+    # Initialize transformation matrix and offset (is the same but offset needed for fmin_cg)
     transformation_matrix = np.eye(3)
     all_transformations = [transformation_matrix]
-    offset = np.zeros(3)  # Parameters: [tx, ty, theta]
+    offset = np.zeros(3)  # [tx, ty, theta]
     last_min_loss = np.inf
     initial_source_cov_matrices = compute_covariance_matrix(source_points, max_distance_nearest_neighbors)
 
     for iteration in range(max_iterations):
 
-        # Find the closest points in the target cloud
+        # Apply the current transformation to the source points
         transformed_source_points = apply_transformation(source_points, transformation_matrix)
         source_cov_matrices = compute_covariance_matrix(transformed_source_points, max_distance_nearest_neighbors)
-
+        
+        # Compute the corresponding target points and weight matrices
         corresponding_target_points = np.zeros_like(source_points)
         weight_matrices = np.zeros((len(source_points), 2, 2))
         tree = KDTree(target_points)
         distances = np.zeros(len(source_points))
         for i, source_point in enumerate(transformed_source_points):
+
             # Find the closest point in the target cloud
             distance, index = tree.query(source_point)
             distances[i] = distance
@@ -129,6 +131,7 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
                 continue
 
             corresponding_target_points[i] = target_points[index]
+
             # Compute the weight matrix by combining the covariance matrices of the target and source points
             combined_cov_matrix = source_cov_matrices[i] + np.eye(2) @ target_cov_matrices[index] @ np.eye(2).T + epsilon * np.eye(2)
             weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
@@ -136,7 +139,7 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
         # Minimize the loss function / cost function using a nonlinear conjugate gradient algorithm
         loss_function = lambda x: loss(x, source_points, corresponding_target_points, weight_matrices)
         grad_loss_function = lambda x: grad_loss(x, source_points, corresponding_target_points, weight_matrices)
-        # x0 parameter: last offset -> ITERATIVE closest point
+        # x0 parameter: last offset -> "ITERATIVE" closest point
         out = fmin_cg(f=loss_function, x0=offset, fprime=grad_loss_function, disp=False, full_output=True)
         offset = out[0]
         min_loss = out[1]
