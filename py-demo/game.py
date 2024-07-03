@@ -166,6 +166,17 @@ def gicp_worker(raycast_queue, result_queue):
             time.sleep(MIN_GICP_DELAY - duration)
         result_queue.put((transformation_matrix, source_cov_matrices, target_cov_matrices))
 
+def get_angle_from_rotation_matrix(R):
+    # Ensure R is a numpy array for mathematical operations
+    R = np.asarray(R)
+    # Calculate the trace of the matrix
+    trace_R = np.trace(R)
+    # Calculate the angle in radians
+    angle = np.arccos((trace_R - 1) / 2.0)
+    # Convert the angle to degrees, if needed
+    angle_degrees = np.degrees(angle)
+    return angle_degrees
+
 def main():
     global robot_x, robot_y, robot_yaw, obstacles
 
@@ -188,6 +199,8 @@ def main():
     target_cov_matrices = []
     transformation_matrix = []
     first_run = True
+
+    estimated_positions = [(START_X, START_Y, 0)]
 
     # Initialize queues for multiprocessing
     raycast_queue = Queue()
@@ -245,6 +258,14 @@ def main():
             source_points = target_points
             target_points = points
             raycast_queue.put((source_points, target_points))
+
+            # Update the estimated robot position
+            last_estimated_x, last_estimated_y, last_estimated_yaw = estimated_positions[-1]
+            delta_x, delta_y, delta_yaw = transformation_matrix[0, 2], transformation_matrix[1, 2], np.arctan2(transformation_matrix[1, 0], transformation_matrix[0, 0])
+            new_estimated_x = last_estimated_x - delta_x * math.cos(last_estimated_yaw) + delta_y * math.sin(last_estimated_yaw)
+            new_estimated_y = last_estimated_y + delta_x * math.sin(last_estimated_yaw) + delta_y * math.cos(last_estimated_yaw)
+            new_estimated_yaw = last_estimated_yaw + delta_yaw
+            estimated_positions.append((new_estimated_x, new_estimated_y, new_estimated_yaw))
 
         # Drawing
         screen.fill(BG_COLOR)
@@ -304,6 +325,12 @@ def main():
                         (robot_x + ROBOT_SIZE * math.cos(math.radians(robot_yaw)),
                         robot_y + ROBOT_SIZE * math.sin(math.radians(robot_yaw))), 2)
         
+        # Draw the estimated path
+        for i in range(1, len(estimated_positions)):
+            start_pos = (int(estimated_positions[i-1][0]), int(estimated_positions[i-1][1]))
+            end_pos = (int(estimated_positions[i][0]), int(estimated_positions[i][1]))
+            pygame.draw.line(left_side, (0, 0, 255), start_pos, end_pos, 2)
+
         # Blit both sides onto the main screen
         screen.blit(left_side, (0, 0))
         screen.blit(right_side, (RIGHT_SIDE_WIDTH, 0))
