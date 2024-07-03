@@ -207,7 +207,7 @@ while running:
             transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(
                 _source_points,
                 _target_points,
-                max_distance_nearest_neighbors=100,
+                max_distance_nearest_neighbors=200,
             )
             transformation_matrixes.append(transformation_matrix)
             print(len(source_cov_matrices))
