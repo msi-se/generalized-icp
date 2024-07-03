@@ -220,6 +220,7 @@ def main():
             robot_y -= ROBOT_SPEED * math.sin(math.radians(robot_yaw))
 
         points = []
+        no_intersection_angles = []
         for angle in range(robot_yaw, robot_yaw + 360, 360 // NUM_RAYS):
             distance = cast_ray((robot_x, robot_y), angle)
             if distance:
@@ -232,6 +233,8 @@ def main():
                     robot_y + distance * math.sin(math.radians(angle))
                 )
                 points.append((rel_intersection, abs_intersection))
+            else:
+                no_intersection_angles.append(angle)
 
         if first_run:
             source_points = target_points
@@ -289,6 +292,12 @@ def main():
         for _, abs_intersection in points:
             pygame.draw.line(left_side, RAY_COLOR, (robot_x, robot_y), abs_intersection)
             pygame.draw.circle(left_side, INTERSECTION_COLOR, (int(abs_intersection[0]), int(abs_intersection[1])), 3)
+        
+        # Draw the rays that did not intersect with any obstacles
+        for angle in no_intersection_angles:
+            x2 = robot_x + MAX_RAY_RANGE * math.cos(math.radians(angle))
+            y2 = robot_y + MAX_RAY_RANGE * math.sin(math.radians(angle))
+            pygame.draw.line(left_side, (32, 32, 32), (robot_x, robot_y), (x2, y2))
 
         # Draw the GICP results
         for i, (rel_intersection, _) in enumerate(visualize_target_points):
