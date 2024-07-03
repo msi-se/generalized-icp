@@ -17,7 +17,7 @@ RAY_COLOR = (0, 255, 0)
 INTERSECTION_COLOR = (0, 0, 255)
 ROBOT_SIZE = 10
 ROBOT_SPEED = 2
-NUM_RAYS = 180
+NUM_RAYS = 90
 MAX_RAY_RANGE = 400
 ROBOT_YAW_SPEED = 2
 RIGHT_SIDE_WIDTH = SCREEN_WIDTH // 2
@@ -41,7 +41,7 @@ obstacles = [
     (200, 400, 75)
 ]
 
-last_distances = []
+last_points = []
 
 def cast_ray(robot_pos, angle):
     x1, y1 = robot_pos
@@ -147,22 +147,29 @@ while running:
         robot_x -= ROBOT_SPEED * math.cos(math.radians(robot_yaw))
         robot_y -= ROBOT_SPEED * math.sin(math.radians(robot_yaw))
 
-    distances = []
+    points = []
     for angle in range(robot_yaw, robot_yaw + 360, 360 // NUM_RAYS):
         distance = cast_ray((robot_x, robot_y), angle)
         if distance:
-            distances.append((angle - robot_yaw, distance))
+            rel_intersection = (
+                distance * math.cos(math.radians(angle - robot_yaw)),
+                distance * math.sin(math.radians(angle - robot_yaw))
+            )
+            abs_intersection = (
+                robot_x + distance * math.cos(math.radians(angle)),
+                robot_y + distance * math.sin(math.radians(angle))
+            )
+            points.append((rel_intersection, abs_intersection))
 
     if ticks % GICP_N_TICKS == 0:
         # GICP Stuff (def gicp(source_points, target_points, max_iterations=20, tolerance=1e-6, epsilon=1e-6):)
         # if len(last_points) > 0 and len(points) > 0:
-
         #     limit = min(len(last_points), len(points))
         #     last_points = last_points[:limit]
         #     points = points[:limit]
-            # transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(last_points, points)
+        #     transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(last_points, points)
 
-        last_distances = distances
+        last_points = points
     
     ticks += 1
 
@@ -189,22 +196,14 @@ while running:
     pygame.draw.circle(right_side, (200, 200, 200), circle_center, MAX_RAY_RANGE, 1)
     pygame.draw.circle(right_side, (200, 200, 200), circle_center, ROBOT_SIZE)
 
-    for angle, distance in distances:
-        intersection = (
-            robot_x + distance * math.cos(math.radians(robot_yaw + angle)),
-            robot_y + distance * math.sin(math.radians(robot_yaw + angle))
-        )
-        pygame.draw.line(left_side, RAY_COLOR, (robot_x + ROBOT_SIZE // 2, robot_y + ROBOT_SIZE // 2), intersection)
-        pygame.draw.circle(left_side, INTERSECTION_COLOR, (int(intersection[0]), int(intersection[1])), 3)
+    for _, abs_intersection in points:
+        pygame.draw.line(left_side, RAY_COLOR, (robot_x + ROBOT_SIZE // 2, robot_y + ROBOT_SIZE // 2), abs_intersection)
+        pygame.draw.circle(left_side, INTERSECTION_COLOR, (int(abs_intersection[0]), int(abs_intersection[1])), 3)
 
-    for angle, distance in distances:
+    for rel_intersection, _ in points:
         # Draw on the right side
-        intersection = (
-            distance * math.cos(math.radians(angle)),
-            distance * math.sin(math.radians(angle))
-        )
-        draw_x = RIGHT_SIDE_WIDTH // 2 + intersection[0]
-        draw_y = SCREEN_HEIGHT // 2 + intersection[1]
+        draw_x = RIGHT_SIDE_WIDTH // 2 + rel_intersection[0]
+        draw_y = SCREEN_HEIGHT // 2 + rel_intersection[1]
         pygame.draw.circle(right_side, INTERSECTION_COLOR, (int(draw_x), int(draw_y)), 3)
 
 
@@ -214,6 +213,9 @@ while running:
     # Blit both sides onto the main screen
     screen.blit(left_side, (0, 0))
     screen.blit(right_side, (RIGHT_SIDE_WIDTH, 0))
+    pygame.draw.line(screen, (0, 0, 0), (robot_x + ROBOT_SIZE // 2, robot_y + ROBOT_SIZE // 2),
+                     (robot_x + ROBOT_SIZE // 2 + ROBOT_SIZE * math.cos(math.radians(robot_yaw)),
+                      robot_y + ROBOT_SIZE // 2 + ROBOT_SIZE * math.sin(math.radians(robot_yaw))), 2)
 
     pygame.display.flip()
     clock.tick(30)
