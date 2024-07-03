@@ -17,10 +17,12 @@ OBSTACLE_COLOR = (255, 0, 0)
 RAY_COLOR = (0, 255, 0)
 INTERSECTION_COLOR = (0, 0, 255)
 ROBOT_SIZE = 10
-ROBOT_SPEED = 1
-NUM_RAYS = 90
+START_X = 20
+START_Y = 20
+ROBOT_SPEED = 2
+NUM_RAYS = 180
 MAX_RAY_RANGE = 400
-ROBOT_YAW_SPEED = 1
+ROBOT_YAW_SPEED = 2
 RIGHT_SIDE_WIDTH = SCREEN_WIDTH // 2
 NOISE = 2
 GICP_N_TICKS = 10
@@ -30,8 +32,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Robot Game with Raycasting')
 
 # Robot starting position and yaw (angle)
-robot_x = 10
-robot_y = 10
+robot_x = START_X
+robot_y = START_Y
 robot_yaw = 0
 
 # Define obstacles (rectangles and circles)
@@ -136,6 +138,9 @@ def draw_ellipse(surface, color, center, cov_matrix, n_std=2.0, alpha=60):
     # Calculate width and height of the ellipse
     width, height = 2 * n_std * np.sqrt(vals)
 
+    if np.isnan(width) or np.isnan(height):
+        return
+    
     # Create the ellipse surface
     ell = pygame.Surface((width, height), pygame.SRCALPHA)
     ell.set_alpha(alpha)
@@ -158,6 +163,7 @@ target_points = []
 source_cov_matrices = []
 target_cov_matrices = []
 transformation_matrix = []
+transformation_matrixes = []
 
 while running:
     for event in pygame.event.get():
@@ -198,7 +204,12 @@ while running:
         if len(source_points) > 0 and len(target_points) > 0:
             _source_points = [rel_intersection for rel_intersection, _ in source_points]
             _target_points = [rel_intersection for rel_intersection, _ in target_points]
-            transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(_source_points, _target_points)
+            transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(
+                _source_points,
+                _target_points,
+                max_distance_nearest_neighbors=100,
+            )
+            transformation_matrixes.append(transformation_matrix)
             print(len(source_cov_matrices))
     
     ticks += 1
@@ -227,7 +238,7 @@ while running:
     pygame.draw.circle(right_side, (200, 200, 200), circle_center, ROBOT_SIZE)
 
     for _, abs_intersection in points:
-        pygame.draw.line(left_side, RAY_COLOR, (robot_x + ROBOT_SIZE // 2, robot_y + ROBOT_SIZE // 2), abs_intersection)
+        pygame.draw.line(left_side, RAY_COLOR, (robot_x, robot_y), abs_intersection)
         pygame.draw.circle(left_side, INTERSECTION_COLOR, (int(abs_intersection[0]), int(abs_intersection[1])), 3)
 
     for i, (rel_intersection, _) in enumerate(target_points):
@@ -257,14 +268,17 @@ while running:
 
 
     # Draw robot as circle
-    pygame.draw.circle(left_side, ROBOT_COLOR, (int(robot_x + ROBOT_SIZE / 2), int(robot_y + ROBOT_SIZE / 2)), ROBOT_SIZE)
-
+    pygame.draw.circle(left_side, ROBOT_COLOR, (int(robot_x), int(robot_y)), ROBOT_SIZE)
+    pygame.draw.line(left_side, (0, 0, 0), (robot_x, robot_y),
+                     (robot_x + ROBOT_SIZE * math.cos(math.radians(robot_yaw)),
+                      robot_y + ROBOT_SIZE * math.sin(math.radians(robot_yaw))), 2)
+    
+    def transformation_matrix_to_vector(matrix):
+        return [matrix[0][2], matrix[1][2]]
+    
     # Blit both sides onto the main screen
     screen.blit(left_side, (0, 0))
     screen.blit(right_side, (RIGHT_SIDE_WIDTH, 0))
-    pygame.draw.line(screen, (0, 0, 0), (robot_x + ROBOT_SIZE // 2, robot_y + ROBOT_SIZE // 2),
-                     (robot_x + ROBOT_SIZE // 2 + ROBOT_SIZE * math.cos(math.radians(robot_yaw)),
-                      robot_y + ROBOT_SIZE // 2 + ROBOT_SIZE * math.sin(math.radians(robot_yaw))), 2)
 
     pygame.display.flip()
     clock.tick(15)
