@@ -63,7 +63,7 @@ def offset_to_transformation_matrix(offset):
     transformation_matrix[:2, 2] = translation
     return transformation_matrix
 
-def gicp(source_points, target_points, max_iterations=20, tolerance=1e-6, epsilon=1e-6):
+def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=10):
     """
     Generalized Iterative Closest Point (GICP) algorithm to align two 2D point clouds.
     :param source_points: Source point cloud (Nx2)
@@ -101,9 +101,7 @@ def gicp(source_points, target_points, max_iterations=20, tolerance=1e-6, epsilo
     target_points = np.asarray(target_points)
 
     # Compute nearest neighbors and covariance matrices
-    source_neighbors = nearest_neighbors(source_points, source_points)
     target_neighbors = nearest_neighbors(target_points, target_points)
-    source_cov_matrices = compute_covariance_matrix(source_points, source_neighbors)
     target_cov_matrices = compute_covariance_matrix(target_points, target_neighbors)
 
     # Initialize transformation matrix and parameters
@@ -114,20 +112,35 @@ def gicp(source_points, target_points, max_iterations=20, tolerance=1e-6, epsilo
 
     for iteration in range(max_iterations):
 
-        # Questions:
-        # Do we need to add noise?
+        rotation_matrix = np.eye(2)
 
-        rotation_matrix = rot_mat(offset[2])
+        # Find the closest points in the target cloud
+        transformed_source_points = apply_transformation(source_points, transformation_matrix)
+        transformed_source_neighbors = nearest_neighbors(transformed_source_points, transformed_source_points)
+        source_cov_matrices = compute_covariance_matrix(transformed_source_points, transformed_source_neighbors)
 
-        # Compute weight weight matrices (inverse of the sum of the covariance matrices of the target points)
+        corresponding_target_points = np.zeros_like(source_points)
         weight_matrices = np.zeros((len(source_points), 2, 2))
-        for i in range(len(source_points)):
-            combined_cov_matrix = target_cov_matrices[i] + rotation_matrix @ source_cov_matrices[i] @ rotation_matrix.T + epsilon * np.eye(2)
+        tree = KDTree(target_points)
+        distances = np.zeros(len(source_points))
+        for i, source_point in enumerate(transformed_source_points):
+            # Find the closest point in the target cloud
+            distance, index = tree.query(source_point)
+            distances[i] = distance
+
+            # Check if the distance is less than the threshold
+            if distance > max_distance_correspondence:
+                weight_matrices[i] = np.zeros((2, 2))
+                continue
+
+            corresponding_target_points[i] = target_points[index]
+            # Compute the weight matrix by combining the covariance matrices of the target and source points
+            combined_cov_matrix = source_cov_matrices[i] + rotation_matrix @ target_cov_matrices[index] @ rotation_matrix.T + epsilon * np.eye(2)
             weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
 
         # Minimize the loss function / cost function using a nonlinear conjugate gradient algorithm
-        loss_function = lambda x: loss(x, source_points, target_points, weight_matrices)
-        grad_loss_function = lambda x: grad_loss(x, source_points, target_points, weight_matrices)
+        loss_function = lambda x: loss(x, source_points, corresponding_target_points, weight_matrices)
+        grad_loss_function = lambda x: grad_loss(x, source_points, corresponding_target_points, weight_matrices)
         # x0 parameter: last offset -> ITERATIVE closest point
         out = fmin_cg(f=loss_function, x0=offset, fprime=grad_loss_function, disp=False, full_output=True)
         offset = out[0]
@@ -299,7 +312,7 @@ if __name__ == "__main__":
 
     square_center = (600, 250)
     square_size = 200
-    num_points_square_side = 10
+    num_points_square_side = 20
 
     source_points_circle = generate_circle_points(circle_center, circle_radius, num_points_circle)
     source_points_square = generate_square_points(square_center, square_size, num_points_square_side)
@@ -314,6 +327,10 @@ if __name__ == "__main__":
     # add a small noise to the points
     source_points += np.random.normal(0, 5, source_points.shape)
     target_points += np.random.normal(0, 10, target_points.shape)
+
+    # shuffle the target points and remove some of them
+    np.random.shuffle(target_points)
+    target_points = target_points[:len(target_points) - 3]
 
     T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
 
