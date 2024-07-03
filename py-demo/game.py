@@ -8,18 +8,18 @@ from multiprocessing import Process, Queue
 import numpy as np
 
 # Constants
-SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 800
-BG_COLOR = (255, 255, 255)
+SCREEN_WIDTH = 1680
+SCREEN_HEIGHT = 840
+BG_COLOR = (0, 0, 0)
 ROBOT_COLOR = (0, 128, 255)
 OBSTACLE_COLOR = (255, 0, 0)
 RAY_COLOR = (0, 255, 0)
 INTERSECTION_COLOR = (0, 0, 255)
 ROBOT_SIZE = 10
 START_X = 50
-START_Y = 200
-ROBOT_SPEED = 1
-NUM_RAYS = 180
+START_Y = 400
+ROBOT_SPEED = 2
+NUM_RAYS = 90
 MAX_RAY_RANGE = 400
 ROBOT_YAW_SPEED = 1
 RIGHT_SIDE_WIDTH = SCREEN_WIDTH // 2
@@ -33,10 +33,10 @@ robot_yaw = 0
 
 # Define obstacles (rectangles and circles)
 obstacles = [
-    pygame.Rect(100, 100, 200, 50),  # Rectangles are defined by x, y, width, height
-    pygame.Rect(400, 300, 50, 200),
-    (600, 150, 50),  # Circles are defined by x, y, radius
-    (200, 400, 75)
+    pygame.Rect(100, 250, 200, 50),  # Rectangles are defined by x, y, width, height
+    pygame.Rect(400, 450, 50, 200),
+    (600, 300, 50),  # Circles are defined by x, y, radius
+    (200, 550, 75)
 ]
 
 def cast_ray(robot_pos, angle):
@@ -159,7 +159,7 @@ def gicp_worker(raycast_queue, result_queue):
             _source_points,
             _target_points,
             max_distance_nearest_neighbors=200,
-            tolerance=10,
+            tolerance=1,
         )
         duration = time.time() - start_time
         if duration < MIN_GICP_DELAY:
@@ -266,13 +266,15 @@ def main():
 
         # Draw the circle on the right side
         circle_center = (RIGHT_SIDE_WIDTH // 2, SCREEN_HEIGHT // 2)
-        pygame.draw.circle(right_side, (200, 200, 200), circle_center, MAX_RAY_RANGE, 1)
+        pygame.draw.circle(right_side, (255, 255, 255), circle_center, MAX_RAY_RANGE)
         pygame.draw.circle(right_side, (200, 200, 200), circle_center, ROBOT_SIZE)
 
+        # Draw the rays and intersections
         for _, abs_intersection in points:
             pygame.draw.line(left_side, RAY_COLOR, (robot_x, robot_y), abs_intersection)
             pygame.draw.circle(left_side, INTERSECTION_COLOR, (int(abs_intersection[0]), int(abs_intersection[1])), 3)
 
+        # Draw the GICP results
         for i, (rel_intersection, _) in enumerate(visualize_target_points):
             draw_x = RIGHT_SIDE_WIDTH // 2 + rel_intersection[0]
             draw_y = SCREEN_HEIGHT // 2 + rel_intersection[1]
@@ -295,6 +297,7 @@ def main():
                 draw_y = SCREEN_HEIGHT // 2 + transformed_point[1]
                 pygame.draw.circle(right_side, (255, 0, 0), (int(draw_x), int(draw_y)), 3)
 
+        # Draw the robot
         pygame.draw.circle(left_side, ROBOT_COLOR, (int(robot_x), int(robot_y)), ROBOT_SIZE)
         pygame.draw.line(left_side, (0, 0, 0), (robot_x, robot_y),
                         (robot_x + ROBOT_SIZE * math.cos(math.radians(robot_yaw)),
