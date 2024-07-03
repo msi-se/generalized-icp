@@ -21,7 +21,7 @@ START_Y = 400
 ROBOT_SPEED = 2
 NUM_RAYS = 90
 MAX_RAY_RANGE = 400
-ROBOT_YAW_SPEED = 1
+ROBOT_YAW_SPEED = 2
 RIGHT_SIDE_WIDTH = SCREEN_WIDTH // 2
 NOISE = 2
 MIN_GICP_DELAY = 0.5
@@ -188,7 +188,8 @@ def main():
     transformation_matrix = []
     first_run = True
 
-    estimated_positions = [(START_X, START_Y, 0)]
+    estimated_positions: list[tuple[float, float, float]] = [(START_X, START_Y, 0)]
+    real_positions: list[tuple[float, float]] = [(START_X, START_Y)]
 
     # Initialize queues for multiprocessing
     raycast_queue = Queue()
@@ -246,6 +247,9 @@ def main():
             source_points = target_points
             target_points = points
             raycast_queue.put((source_points, target_points))
+
+            # Update the real robot position
+            real_positions.append((robot_x, robot_y))
 
             # Update the estimated robot position
             last_estimated_x, last_estimated_y, last_estimated_yaw = estimated_positions[-1]
@@ -315,11 +319,17 @@ def main():
                         (robot_x + ROBOT_SIZE * math.cos(math.radians(robot_yaw)),
                         robot_y + ROBOT_SIZE * math.sin(math.radians(robot_yaw))), 2)
         
+        # Draw the real path
+        for i in range(1, len(real_positions)):
+            start_pos = (int(real_positions[i-1][0]), int(real_positions[i-1][1]))
+            end_pos = (int(real_positions[i][0]), int(real_positions[i][1]))
+            pygame.draw.line(left_side, (128, 128, 128), start_pos, end_pos, 2)
+        
         # Draw the estimated path
         for i in range(1, len(estimated_positions)):
             start_pos = (int(estimated_positions[i-1][0]), int(estimated_positions[i-1][1]))
             end_pos = (int(estimated_positions[i][0]), int(estimated_positions[i][1]))
-            pygame.draw.line(left_side, (128, 128, 255), start_pos, end_pos, 2)
+            pygame.draw.line(left_side, (255, 165, 0), start_pos, end_pos, 2)
 
         # Blit both sides onto the main screen
         screen.blit(left_side, (0, 0))
