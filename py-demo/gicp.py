@@ -216,19 +216,8 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
     green = (0, 255, 0)
     yellow = (255, 255, 0)
 
-    scale = 3
-
-    target_points_color = red
-    source_points_color = blue
-    transformed_points_color = yellow
-    source_elip_color = red
-    target_elip_color = red
 
     def draw_points(points, color):
-
-        # scale the points
-        points = points * scale
-
         for point in points:
             pygame.draw.circle(screen, color, point.astype(int), 3)
 
@@ -244,7 +233,7 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         theta_degrees = np.degrees(theta)
 
         # Calculate width and height of the ellipse
-        width, height = 2 * n_std * np.sqrt(vals) * scale
+        width, height = 2 * n_std * np.sqrt(vals)
 
         # Create the ellipse surface
         ell = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -255,7 +244,6 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         ell = pygame.transform.rotate(ell, -theta_degrees)
         
         # Calculate the new position to center the rotated ellipse
-        center = center * scale
         rotated_rect = ell.get_rect(center=center)
         surface.blit(ell, rotated_rect)
 
@@ -266,12 +254,12 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
             if event.type == QUIT:
                 running = False
 
-        screen.fill(white)
+        screen.fill((0, 0, 0))
         transformed_source = apply_transformation(source_cloud, all_transformations[step])
 
-        draw_points(source_cloud, source_points_color)
-        draw_points(target_cloud, target_points_color)
-        draw_points(transformed_source, transformed_points_color)
+        draw_points(source_cloud, (0, 0, 255))  # Blue for original source
+        draw_points(target_cloud, (0, 255, 0))  # Green for target
+        draw_points(transformed_source, (255, 0, 0))  # Red for transformed source
 
         # Draw the last transformation matrix
         font = pygame.font.Font(None, 36)
@@ -308,10 +296,10 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         # Draw ellipses
         if show_ellipses:
             for i, point in enumerate(source_points):
-                draw_ellipse(screen, source_elip_color, point, source_cov_matrices[i])
+                draw_ellipse(screen, yellow, point, source_cov_matrices[i])
         
             for i, point in enumerate(target_points):
-                draw_ellipse(screen, target_elip_color, point, target_cov_matrices[i])
+                draw_ellipse(screen, green, point, target_cov_matrices[i])
 
         pygame.display.update()
         clock.tick(30)
