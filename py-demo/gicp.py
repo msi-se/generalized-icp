@@ -13,7 +13,7 @@ def compute_covariance_matrix(points, neighbors):
         cov_matrices.append(cov_matrix)
     return np.array(cov_matrices)
 
-def nearest_neighbors(source_points, target_points, k=6):
+def nearest_neighbors(source_points, target_points, k=4):
     tree = KDTree(target_points)
     distances, indices = tree.query(source_points, k=k)
     neighbors = target_points[indices]
@@ -151,7 +151,7 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         for point in points:
             pygame.draw.circle(screen, color, point.astype(int), 3)
 
-    def draw_ellipse(surface, color, center, cov_matrix, n_std=2.0):
+    def draw_ellipse(surface, color, center, cov_matrix, n_std=2.0, alpha=60):
         vals, vecs = np.linalg.eigh(cov_matrix)
         vals = np.maximum(vals, 1e-6) 
         order = vals.argsort()[::-1]
@@ -167,7 +167,7 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
 
         # Create the ellipse surface
         ell = pygame.Surface((width, height), pygame.SRCALPHA)
-        ell.set_alpha(64)
+        ell.set_alpha(alpha)
         pygame.draw.ellipse(ell, color, (0, 0, width, height), 2)
         
         # Rotate the ellipse surface
@@ -176,32 +176,6 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         # Calculate the new position to center the rotated ellipse
         rotated_rect = ell.get_rect(center=center)
         surface.blit(ell, rotated_rect)
-
-    def draw_gradient(surface, center, cov_matrix, n_std=2.0):
-        vals, vecs = np.linalg.eigh(cov_matrix)
-        vals = np.maximum(vals, 1e-6) 
-        order = vals.argsort()[::-1]
-        vals, vecs = vals[order], vecs[:, order]
-        
-        # Angle of rotation (theta)
-        largest_eigenvec = vecs[:, 0]
-        theta = np.arctan2(largest_eigenvec[1], largest_eigenvec[0])
-        theta_degrees = np.degrees(theta)
-
-        # Calculate width and height of the ellipse
-        width, height = 2 * n_std * np.sqrt(vals)
-
-        # Create the ellipse surface
-        ell = pygame.Surface((width, height), pygame.SRCALPHA)
-        pygame.draw.ellipse(ell, (255, 255, 255, 0), (0, 0, width, height), 2)
-        
-        # Rotate the ellipse surface
-        ell = pygame.transform.rotate(ell, -theta_degrees)
-        
-        # Calculate the new position to center the rotated ellipse
-        rotated_rect = ell.get_rect(center=center)
-        surface.blit(ell, rotated_rect)
-
 
     show_ellipses = True
 
@@ -282,7 +256,8 @@ if __name__ == "__main__":
     rotation_angle = np.pi / 6
     target_points = transform_points(source_points, translation, rotation_angle)
 
-    # add a small noise to the target points
+    # add a small noise to the points
+    source_points += np.random.normal(0, 5, source_points.shape)
     target_points += np.random.normal(0, 10, target_points.shape)
 
     T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
