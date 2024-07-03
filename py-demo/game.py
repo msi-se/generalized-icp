@@ -2,7 +2,8 @@ import random
 import pygame
 import sys
 import math
-from gicp import gicp
+from gicp import gicp, apply_transformation
+import numpy as np
 
 # Initialize Pygame
 pygame.init()
@@ -16,13 +17,13 @@ OBSTACLE_COLOR = (255, 0, 0)
 RAY_COLOR = (0, 255, 0)
 INTERSECTION_COLOR = (0, 0, 255)
 ROBOT_SIZE = 10
-ROBOT_SPEED = 2
+ROBOT_SPEED = 1
 NUM_RAYS = 90
 MAX_RAY_RANGE = 400
-ROBOT_YAW_SPEED = 2
+ROBOT_YAW_SPEED = 1
 RIGHT_SIDE_WIDTH = SCREEN_WIDTH // 2
 NOISE = 1
-GICP_N_TICKS = 10
+GICP_N_TICKS = 5
 
 # Set up the display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -40,8 +41,6 @@ obstacles = [
     (600, 150, 50),  # Circles are defined by x, y, radius
     (200, 400, 75)
 ]
-
-last_points = []
 
 def cast_ray(robot_pos, angle):
     x1, y1 = robot_pos
@@ -123,11 +122,42 @@ def ray_circle_intersection(p1, p2, center, radius):
         return intersections if intersections else None
     return None
 
+def draw_ellipse(surface, color, center, cov_matrix, n_std=2.0, alpha=60):
+    vals, vecs = np.linalg.eigh(cov_matrix)
+    vals = np.maximum(vals, 1e-6) 
+    order = vals.argsort()[::-1]
+    vals, vecs = vals[order], vecs[:, order]
+    
+    # Angle of rotation (theta)
+    largest_eigenvec = vecs[:, 0]
+    theta = np.arctan2(largest_eigenvec[1], largest_eigenvec[0])
+    theta_degrees = np.degrees(theta)
+
+    # Calculate width and height of the ellipse
+    width, height = 2 * n_std * np.sqrt(vals)
+
+    # Create the ellipse surface
+    ell = pygame.Surface((width, height), pygame.SRCALPHA)
+    ell.set_alpha(alpha)
+    pygame.draw.ellipse(ell, color, (0, 0, width, height), 2)
+    
+    # Rotate the ellipse surface
+    ell = pygame.transform.rotate(ell, -theta_degrees)
+    
+    # Calculate the new position to center the rotated ellipse
+    rotated_rect = ell.get_rect(center=center)
+    surface.blit(ell, rotated_rect)
+
 # Game loop
 running = True
 clock = pygame.time.Clock()
 
 ticks = 0
+source_points = []
+target_points = []
+source_cov_matrices = []
+target_cov_matrices = []
+transformation_matrix = []
 
 while running:
     for event in pygame.event.get():
@@ -163,13 +193,14 @@ while running:
 
     if ticks % GICP_N_TICKS == 0:
         # GICP Stuff (def gicp(source_points, target_points, max_iterations=20, tolerance=1e-6, epsilon=1e-6):)
-        # if len(last_points) > 0 and len(points) > 0:
-        #     limit = min(len(last_points), len(points))
-        #     last_points = last_points[:limit]
-        #     points = points[:limit]
-        #     transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(last_points, points)
-
-        last_points = points
+        source_points = target_points
+        target_points = points
+        if len(source_points) > 0 and len(target_points) > 0:
+            limit = min(len(source_points), len(target_points))
+            _source_points = [rel_intersection for rel_intersection, _ in source_points[:limit]]
+            _target_points = [rel_intersection for rel_intersection, _ in target_points[:limit]]
+            transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices = gicp(_source_points, _target_points)
+            print(len(source_cov_matrices))
     
     ticks += 1
 
@@ -200,11 +231,22 @@ while running:
         pygame.draw.line(left_side, RAY_COLOR, (robot_x + ROBOT_SIZE // 2, robot_y + ROBOT_SIZE // 2), abs_intersection)
         pygame.draw.circle(left_side, INTERSECTION_COLOR, (int(abs_intersection[0]), int(abs_intersection[1])), 3)
 
-    for rel_intersection, _ in points:
+    for i, (rel_intersection, _) in enumerate(target_points):
         # Draw on the right side
         draw_x = RIGHT_SIDE_WIDTH // 2 + rel_intersection[0]
         draw_y = SCREEN_HEIGHT // 2 + rel_intersection[1]
         pygame.draw.circle(right_side, INTERSECTION_COLOR, (int(draw_x), int(draw_y)), 3)
+        if len(target_cov_matrices) > i:
+            draw_ellipse(right_side, INTERSECTION_COLOR, (int(draw_x), int(draw_y)), target_cov_matrices[i])
+    
+    # apple transformation_matrixs to source points and draw them
+    if len(transformation_matrix) > 0:
+        rel_intersections = np.asarray([[rel_intersection[0], rel_intersection[1]] for rel_intersection, _ in source_points])
+        transformed_points = apply_transformation(rel_intersections, transformation_matrix)
+        for i, transformed_point in enumerate(transformed_points):
+            draw_x = RIGHT_SIDE_WIDTH // 2 + transformed_point[0]
+            draw_y = SCREEN_HEIGHT // 2 + transformed_point[1]
+            pygame.draw.circle(right_side, (255, 0, 0), (int(draw_x), int(draw_y)), 3)
 
 
     # Draw robot as circle
@@ -218,7 +260,7 @@ while running:
                       robot_y + ROBOT_SIZE // 2 + ROBOT_SIZE * math.sin(math.radians(robot_yaw))), 2)
 
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(15)
 
 pygame.quit()
 sys.exit()
