@@ -12,10 +12,14 @@ def compute_covariance_matrix(points, max_distance=30):
     for i in range(len(points)):
         distances, indices = tree.query(points[i], k=6, distance_upper_bound=max_distance)
         indices = np.delete(indices, np.where(indices == len(points)))
-        neighbors = points[indices]
-        try:
-            cov_matrices[i] = np.cov(neighbors.T)
-        except np.linalg.LinAlgError:
+        # Ensure there are enough neighbors for covariance calculation
+        if len(indices) > 1:
+            neighbors = points[indices]
+            try:
+                cov_matrices[i] = np.cov(neighbors.T)
+            except np.linalg.LinAlgError:
+                cov_matrices[i] = np.eye(2)
+        else:
             cov_matrices[i] = np.eye(2)
     return cov_matrices
 
