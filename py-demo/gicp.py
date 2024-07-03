@@ -26,26 +26,32 @@ def rot_mat(theta):
     c, s = np.cos(theta), np.sin(theta)
     return np.array([[c, -s], [s, c]])
 
-def loss(x, a, b, M):
+def loss(offset, source_points, target_points, weight_matrices):
     """Compute the loss function for the given transformation parameters."""
-    t = x[:2]
-    R = rot_mat(x[2])
-    residual = b - a @ R.T - t
-    tmp = np.sum(M * residual[:, None, :], axis=2)
-    return np.sum(residual * tmp)
+    translation = offset[:2]
+    rotation_matrix = rot_mat(offset[2])
+    residuals = target_points - source_points @ rotation_matrix.T - translation
+    weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
+    return np.sum(residuals * weighted_residuals)
 
-def grad_loss(x, a, b, M):
+def grad_loss(offset, source_points, target_points, weight_matrices):
     """Compute the gradient of the loss function."""
-    t = x[:2]
-    R = rot_mat(x[2])
-    g = np.zeros(3)
-    residual = b - a @ R.T - t
-    tmp = np.sum(M * residual[:, None, :], axis=2)
-    g[:2] = -2 * np.sum(tmp, axis=0)
-    grad_R = -2 * (tmp.T @ a)
-    grad_R_theta = np.array([[-np.sin(x[2]), -np.cos(x[2])], [np.cos(x[2]), -np.sin(x[2])]])
-    g[2] = np.sum(grad_R * grad_R_theta)
-    return g
+    translation = offset[:2]
+    rotation_matrix = rot_mat(offset[2])
+    gradient = np.zeros(3)
+    residuals = target_points - source_points @ rotation_matrix.T - translation
+    weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
+    
+    # Gradient with respect to translation
+    gradient[:2] = -2 * np.sum(weighted_residuals, axis=0)
+    
+    # Gradient with respect to rotation
+    grad_rotation = -2 * (weighted_residuals.T @ source_points)
+    grad_rotation_theta = np.array([[-np.sin(offset[2]), -np.cos(offset[2])], [np.cos(offset[2]), -np.sin(offset[2])]])
+    gradient[2] = np.sum(grad_rotation * grad_rotation_theta)
+    
+    return gradient
+
 
 def offset_to_transformation_matrix(offset):
     """Convert the offset parameters (tx, ty, theta) to a transformation matrix."""
