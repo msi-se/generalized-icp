@@ -5,21 +5,19 @@ import pygame
 from pygame.locals import QUIT
 from scipy.optimize import fmin_cg
 
-
-def compute_covariance_matrix(points, neighbors):
-    """Compute the covariance matrices for each point in the cloud."""
-    num_points = len(points)
-    cov_matrices = np.zeros((num_points, 2, 2))
-    for i in range(num_points):
-        cov_matrices[i] = np.cov(neighbors[i].T)
+def compute_covariance_matrix(points, max_distance=30):
+    """Find the k nearest neighbors of each point in the cloud and compute the covariance matrices with them."""
+    tree = KDTree(points)
+    cov_matrices = np.zeros((len(points), 2, 2))
+    for i in range(len(points)):
+        distances, indices = tree.query(points[i], k=6, distance_upper_bound=max_distance)
+        indices = np.delete(indices, np.where(indices == len(points)))
+        neighbors = points[indices]
+        try:
+            cov_matrices[i] = np.cov(neighbors.T)
+        except np.linalg.LinAlgError:
+            cov_matrices[i] = np.eye(2)
     return cov_matrices
-
-def nearest_neighbors(source_points, target_points, k=6):
-    """Find the k nearest neighbors of each point in the source cloud."""
-    tree = KDTree(target_points)
-    distances, indices = tree.query(source_points, k=k)
-    neighbors = target_points[indices]
-    return neighbors
 
 def rot_mat(theta):
     """Return a 2D rotation matrix given the angle theta."""
@@ -63,7 +61,7 @@ def offset_to_transformation_matrix(offset):
     transformation_matrix[:2, 2] = translation
     return transformation_matrix
 
-def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=10):
+def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
     """
     Generalized Iterative Closest Point (GICP) algorithm to align two 2D point clouds.
     :param source_points: Source point cloud (Nx2)
@@ -101,23 +99,20 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
     target_points = np.asarray(target_points)
 
     # Compute nearest neighbors and covariance matrices
-    target_neighbors = nearest_neighbors(target_points, target_points)
-    target_cov_matrices = compute_covariance_matrix(target_points, target_neighbors)
+    target_cov_matrices = compute_covariance_matrix(target_points, max_distance_nearest_neighbors)
 
     # Initialize transformation matrix and parameters
     transformation_matrix = np.eye(3)
     all_transformations = [transformation_matrix]
     offset = np.zeros(3)  # Parameters: [tx, ty, theta]
     last_min_loss = np.inf
+    initial_source_cov_matrices = compute_covariance_matrix(source_points, max_distance_nearest_neighbors)
 
     for iteration in range(max_iterations):
 
-        rotation_matrix = np.eye(2)
-
         # Find the closest points in the target cloud
         transformed_source_points = apply_transformation(source_points, transformation_matrix)
-        transformed_source_neighbors = nearest_neighbors(transformed_source_points, transformed_source_points)
-        source_cov_matrices = compute_covariance_matrix(transformed_source_points, transformed_source_neighbors)
+        source_cov_matrices = compute_covariance_matrix(transformed_source_points, max_distance_nearest_neighbors)
 
         corresponding_target_points = np.zeros_like(source_points)
         weight_matrices = np.zeros((len(source_points), 2, 2))
@@ -135,7 +130,7 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
 
             corresponding_target_points[i] = target_points[index]
             # Compute the weight matrix by combining the covariance matrices of the target and source points
-            combined_cov_matrix = source_cov_matrices[i] + rotation_matrix @ target_cov_matrices[index] @ rotation_matrix.T + epsilon * np.eye(2)
+            combined_cov_matrix = source_cov_matrices[i] + np.eye(2) @ target_cov_matrices[index] @ np.eye(2).T + epsilon * np.eye(2)
             weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
 
         # Minimize the loss function / cost function using a nonlinear conjugate gradient algorithm
@@ -156,7 +151,7 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
         transformation_matrix = offset_to_transformation_matrix(offset)
         all_transformations.append(transformation_matrix)
 
-    return transformation_matrix, all_transformations, source_cov_matrices, target_cov_matrices
+    return transformation_matrix, all_transformations, initial_source_cov_matrices, target_cov_matrices
 
 def apply_transformation(cloud, T):
     return np.dot(cloud[:, :2], T[:2, :2].T) + T[:2, 2]
@@ -312,7 +307,7 @@ if __name__ == "__main__":
 
     square_center = (600, 250)
     square_size = 200
-    num_points_square_side = 20
+    num_points_square_side = 30
 
     source_points_circle = generate_circle_points(circle_center, circle_radius, num_points_circle)
     source_points_square = generate_square_points(square_center, square_size, num_points_square_side)
@@ -321,12 +316,12 @@ if __name__ == "__main__":
 
 
     translation = np.array([150, -50])
-    rotation_angle = np.pi / 6
+    rotation_angle = np.pi / 3
     target_points = transform_points(source_points, translation, rotation_angle)
 
     # add a small noise to the points
-    source_points += np.random.normal(0, 5, source_points.shape)
-    target_points += np.random.normal(0, 10, target_points.shape)
+    source_points += np.random.normal(0, 2, source_points.shape)
+    target_points += np.random.normal(0, 5, target_points.shape)
 
     # shuffle the target points and remove some of them
     np.random.shuffle(target_points)
