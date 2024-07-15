@@ -16,3 +16,11 @@ icp-notebook:
   type: Web
   url: https://nbviewer.org/github/niosus/notebooks/blob/master/icp.ipynb
   date: 2021
+
+
+point-to-plane-icp:
+  type: Article
+  title: Linear Least-Squares Optimization for Point-to-Plane ICP Surface Registration
+  author: Kok-Lim Low
+  url: https://www.comp.nus.edu.sg/~lowkl/publications/lowk_point-to-plane_icp_techrep.pdf
+  date: 2004
