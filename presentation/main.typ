@@ -46,7 +46,7 @@
     - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
     - Standard-ICP & point-to-plane in *generelles Framework* überführen
     - *Probabilistische* Betrachtung
-    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen)
+    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) →  *plane-to-plane*
 ]
 
 #slide[
@@ -55,10 +55,10 @@
   #grid(
     columns: 2,
     [
-    - "point-to-point" (Standard-ICP)
-    - "point-to-plane"
+    - *point-to-point* (Standard-ICP)
+    - *point-to-plane*
       - vergleicht Punkt mit Ebene durch Normalenvektor
-    - Generalized-ICP
+    - *Generalized-ICP*
       - quasi "plane-to-plane"
       - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
       - wenn in Ebene → Kovarianzmatrix ist "flach"
@@ -93,45 +93,72 @@
     + $T arrow.l T_0$
     + *while* not converged *do*
       + *for* $i arrow.l 1$ *to* $N$ *do*
-        + $m_i arrow.l "FindClosestPointInA"(T dot.op b_i)$
-        + *if* $parallel m_i - T dot.op b_i parallel lt.eq d_(max)$ *then*
-          + $C_i^A arrow.l "computeCovarianceMatrix"(T dot.op b_i)$
-          + $C_i^B arrow.l "computeCovarianceMatrix"(a_i)$
+        + $m_i arrow.l$ `FindClosestPointInA`$(T dot.op b_i)$
+        + $d_i^((T)) arrow.l b_i - T dot.op m_i$  #h(3em)  #text(gray)[\// Residuum / Abstand]
+        + *if* $parallel d_i^((T)) parallel lt.eq d_(max)$ *then*
+          + $C_i^A arrow.l$ `computeCovarianceMatrix`$(T dot.op b_i)$
+          + $C_i^B arrow.l$ `computeCovarianceMatrix`$(m_i)$
         + *else*
           + $C_i^A arrow.l 0$; #h(1em) $C_i^B arrow.l 0$
         + *end*
-        + $d_i^((T)) arrow.l b_i - T dot.op a_i$  #h(3em)  \// Residuum / Abstand
       + *end*
       + $T arrow.l arg min_T {sum_i d_i^(T)^T  (C_i^B + T C_i^A T^T)^(-1) d_i^((T))}$ 
     + *end*     
   ]
 ]
 
-
 #slide[
-  = Theorie
 
-  - Algorithmus (ausführlicher als Orginal):
-  #pseudocode-list[
-    + $T$ = $T_0$
-    + $"CA"$ = computeCovarianceMatrices($A$)
-    + *while* has not converged *do*
-      + *for* $i$ = 1 to $N$ *do*
-        + $m_i$ = findClosestPointInA($T * b_i$)
-        + $c_i$ = computeCovarianceMatrix($T * b_i$)
-        + $w_i$ = computeWeightMatrix($c_i, "CA"_i$)
-      + *end*
-      + $T$ = optimizeLossFunction($T, A, B, W$)
-    + *end*
+  = Theorie - GICP Algorithmus - Variationen für Kovarianzmatrizen
+
+  #pseudocode-list(
+    line-numbering: none
+    )[
+    + $C_i^A arrow.l$ `computeCovarianceMatrix`$(T dot.op b_i)$
+    + $C_i^B arrow.l$ `computeCovarianceMatrix`$(m_i)$
   ]
+
+  - für *Standard-ICP* (point-to-point):
+    - $C_i^A arrow.l 0$
+    - $C_i^B arrow.l 1$ #h(3.3em) → keine Oberflächenstruktur berücksichtigt
+
+#v(1cm)
+
+- für *point-to-plane*:
+    - $C_i^A arrow.l 0$
+    - $C_i^B arrow.l P_i^(-1)$ #h(2em) → $P_i$ ist die Projektionsmatrix auf die Ebene (beinhaltet Normalenvektor)
+
+#v(1cm)
+
+- für *plane-to-plane* (im Paper vorgeschlagene Methode):
+    - `computeCovarianceMatrix` berechnet Kovarianzmatrix unter Betrachtung der nächsten 20 Punkte
+      - verwendet *PCA* (Principal Component Analysis/Hauptkomponentenanalyse)
 ]
+
+
+// #slide[
+//   = Theorie
+
+//   - Algorithmus (ausführlicher als Orginal):
+//   #pseudocode-list[
+//     + $T$ = $T_0$
+//     + $"CA"$ = computeCovarianceMatrices($A$)
+//     + *while* has not converged *do*
+//       + *for* $i$ = 1 to $N$ *do*
+//         + $m_i$ = findClosestPointInA($T * b_i$)
+//         + $c_i$ = computeCovarianceMatrix($T * b_i$)
+//         + $w_i$ = computeWeightMatrix($c_i, "CA"_i$)
+//       + *end*
+//       + $T$ = optimizeLossFunction($T, A, B, W$)
+//     + *end*
+//   ]
+// ]
 
 
 #slide[
   = Demo: Eigene Implementierung in Python
 
   - Paper sehr mathematisch
-  - Algorithmus wurde nie komplett gezeigt
   - zwar Implementierungen auf GitHub, aber nicht wirklich lesbar
 
   #v(0.5cm)
@@ -149,9 +176,9 @@
 
   #v(1cm)
 
-  #emph[$->$ CODE OVERVIEW]
+  #emph[$->$ LIVE DEMO]
 
   #v(1cm)
 
-  #emph[$->$ LIVE DEMO]
+  #emph[$->$ CODE OVERVIEW]
 ]
