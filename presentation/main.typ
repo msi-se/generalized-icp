@@ -163,7 +163,7 @@
 
   - für *Standard-ICP* (point-to-point):
     - $C_i^A arrow.l 0$
-    - $C_i^B arrow.l 1$ #h(3.3em) → keine Oberflächenstruktur berücksichtigt
+    - $C_i^B arrow.l 1$ #h(3.3em) → keine Oberflächenstruktur berücksichtigt (einfache Gewichtung)
 
 #v(0.2cm)
 
