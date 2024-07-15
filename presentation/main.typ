@@ -3,17 +3,32 @@
 
 
 #let (template, slide, title-slide, pause, uncover, only) = minideck.config(
-  theme: minideck.themes.simple.with(variant: "light")
+  theme: minideck.themes.simple.with(variant: "light"),
 )
 #show: template
 
 #set text(size: 16pt)
 #set text(lang: "de")
 
+#let comment(body) = {
+
+  let showInPDF = sys.inputs.at("with-comments", default: "false") == "true"
+  if showInPDF == true {
+    slide[
+      = Kommentar
+      #box(fill: rgb("#ededed"), width: 100%, height: 90%, inset: 1cm)[
+        body
+      ]
+    ]
+  } else {
+    none
+  }
+}
+
 #title-slide[
   = Generalized Iterative Closest Point
   Mündliche Prüfung in der Vorlesung Autonome Roboter
-  
+
   bei Prof. Dr.-Ing. Michael Blaich
 
   #datetime.today().display("[day].[month].[year]")
@@ -25,7 +40,7 @@
 ]
 
 #slide[
-  = Agenda 
+  = Agenda
 
   + Einführung
   + Theorie
@@ -46,7 +61,7 @@
     - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
     - Standard-ICP & point-to-plane in *generelles Framework* überführen
     - *Probabilistische* Betrachtung
-    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) →  *plane-to-plane* 
+    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) → *plane-to-plane*
 ]
 
 #slide[
@@ -62,7 +77,7 @@
   === Maximum Likelihood Estimation (MLE)
 
   - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
-  - der Paramter wird ausgewählt, der die beobachteten Daten am wahrscheinlichsten macht  
+  - der Paramter wird ausgewählt, der die beobachteten Daten am wahrscheinlichsten macht
   - oft verwendet um: $arg max_p ...$ / $arg min_p ...$ zu finden
 ]
 
@@ -75,22 +90,22 @@
   - minimiert die quadratischen Abstände korrespondierender Punkte
 
   #columns(2)[
-  #text(size: 14.9pt)[
-    #pseudocode-list[
-      + $T arrow.l T_0$
-      + *while* not converged *do*
-        + *for* $i arrow.l 1$ *to* $N$ *do*
-          + $m_i arrow.l$ `FindClosestPointInA`$(T dot.op b_i)$
-          + *if* $parallel m_i - b_i parallel lt.eq d_(max)$ *then*
-            + $w_i arrow.l 1$
-          + *else*
-            + $w_i arrow.l 0$
+    #text(size: 14.9pt)[
+      #pseudocode-list[
+        + $T arrow.l T_0$
+        + *while* not converged *do*
+          + *for* $i arrow.l 1$ *to* $N$ *do*
+            + $m_i arrow.l$ `FindClosestPointInA`$(T dot.op b_i)$
+            + *if* $parallel m_i - b_i parallel lt.eq d_(max)$ *then*
+              + $w_i arrow.l 1$
+            + *else*
+              + $w_i arrow.l 0$
+            + *end*
           + *end*
+          + $T arrow.l arg min_T {sum_i w_i (parallel T dot.op b_i - m_i parallel)^2}$
         + *end*
-        + $T arrow.l arg min_T {sum_i w_i (parallel T dot.op b_i - m_i parallel)^2}$
-      + *end*     
+      ]
     ]
-  ]
     #colbreak()
 
     // icp gif
@@ -98,10 +113,14 @@
       caption: [Standard-ICP @icp-notebook],
       [
         #image("./assets/icp.gif", width: 100%, format: "gif")
-      ]
+      ],
     )
 
   ]
+]
+
+#slide[
+  = Theorie - Point-to-Plane-ICP
 ]
 
 #slide[
@@ -110,22 +129,24 @@
   #grid(
     columns: 2,
     [
-    - *point-to-point* (Standard-ICP)
-    - *point-to-plane*
-      - vergleicht Punkt mit Ebene durch Normalenvektor
-    - *Generalized-ICP*
-      - quasi "plane-to-plane"
-      - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
-      - wenn in Ebene → Kovarianzmatrix ist "flach"
-  ], [
-    #figure(
-      caption: "Kovarianzmatrizen (eigene Darstellung)",
-      [
-        #image("./assets/cov-matr.png", width: 100%)
-      ]
-    )
-  ])
-  
+      - *point-to-point* (Standard-ICP)
+      - *point-to-plane*
+        - vergleicht Punkt mit Ebene durch Normalenvektor
+      - *Generalized-ICP*
+        - quasi "plane-to-plane"
+        - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
+        - wenn in Ebene → Kovarianzmatrix ist "flach"
+    ],
+    [
+      #figure(
+        caption: "Kovarianzmatrizen (eigene Darstellung)",
+        [
+          #image("./assets/cov-matr.png", width: 100%)
+        ],
+      )
+    ],
+  )
+
   #v(1cm)
 ]
 
@@ -138,7 +159,7 @@
     + *while* not converged *do*
       + *for* $i arrow.l 1$ *to* $N$ *do*
         + $m_i arrow.l$ `FindClosestPointInA`$(T dot.op b_i)$
-        + $d_i^((T)) arrow.l b_i - T dot.op m_i$  #h(3em)  #text(gray)[\// Residuum / Abstand]
+        + $d_i^((T)) arrow.l b_i - T dot.op m_i$ #h(3em) #text(gray)[\// Residuum / Abstand]
         + *if* $parallel d_i^((T)) parallel lt.eq d_(max)$ *then*
           + $C_i^A arrow.l$ `computeCovarianceMatrix`$(T dot.op b_i)$
           + $C_i^B arrow.l$ `computeCovarianceMatrix`$(m_i)$
@@ -146,8 +167,10 @@
           + $C_i^A arrow.l 0$; #h(1em) $C_i^B arrow.l 0$
         + *end*
       + *end*
-      + $T arrow.l arg min_T {sum_i d_i^(T)^T  (C_i^B + T C_i^A T^T)^(-1) d_i^((T))}$  #h(1em) #text(gray)[\// Maximum Likelihood Estimation]
-    + *end*     
+      + $T arrow.l arg min_T {
+            sum_i d_i^(T)^T (C_i^B + T C_i^A T^T)^(-1) d_i^((T))
+          }$ #h(1em) #text(gray)[\// Maximum Likelihood Estimation]
+    + *end*
   ]
 ]
 
@@ -156,9 +179,7 @@
   = Theorie - GICP-Algorithmus
   == Variationen für Kovarianzmatrizen
 
-  #pseudocode-list(
-    line-numbering: none
-    )[
+  #pseudocode-list(line-numbering: none)[
     + $C_i^A arrow.l$ `computeCovarianceMatrix`$(T dot.op b_i)$
     + $C_i^B arrow.l$ `computeCovarianceMatrix`$(m_i)$
   ]
@@ -167,27 +188,27 @@
     - $C_i^A arrow.l 0$
     - $C_i^B arrow.l 1$ #h(3.3em) → keine Oberflächenstruktur berücksichtigt (einfache Gewichtung)
 
-#v(0.2cm)
+  #v(0.2cm)
 
-- für *point-to-plane*:
+  - für *point-to-plane*:
     - $C_i^A arrow.l 0$
     - $C_i^B arrow.l P_i^(-1)$ #h(2em) → $P_i$ ist die Projektionsmatrix auf die Ebene (beinhaltet Normalenvektor)
 
-#v(0.2cm)
+  #v(0.2cm)
 
-#columns(2)[
+  #columns(2)[
 
-  - für *plane-to-plane* (im Paper vorgeschlagene Methode):
+    - für *plane-to-plane* (im Paper vorgeschlagene Methode):
       - `computeCovarianceMatrix` berechnet Kovarianzmatrix unter Betrachtung der nächsten 20 Punkte
         - verwendet *PCA* (Principal Component Analysis/Hauptkomponentenanalyse)
 
-  #colbreak()
-  #figure(
-    caption: [Plane-to-plane @segal-gicp],
-    [
-      #image("./assets/plane-to-plane.png", width: 100%)
-    ]
-  )
+    #colbreak()
+    #figure(
+      caption: [Plane-to-plane @segal-gicp],
+      [
+        #image("./assets/plane-to-plane.png", width: 100%)
+      ],
+    )
 
   ]
 ]
@@ -207,7 +228,7 @@
     caption: [Durchschnittsfehler als Funktion von $d_(max)$ @segal-gicp],
     [
       #image("./assets/paper-results.png", width: 60%)
-    ]
+    ],
   )
 ]
 
@@ -243,143 +264,129 @@
   = Parameterisierung
 
   ```cpp
-//name des odom topics
-this->declare_parameter("odom_topic", "");
-//name des icp topics
-this->declare_parameter("gicp_result_topic", "");  
-//name des zeitmessung topics
-this->declare_parameter("alignment_time_topic", "");    
-//parameter ob gicp oder icp verwendet wird
-this->declare_parameter("gicp", false); 
-//ob manuelle transformation gepublished wird
-this->declare_parameter("publish_tf", false); 
+  //name des odom topics
+  this->declare_parameter("odom_topic", "");
+  //name des icp topics
+  this->declare_parameter("gicp_result_topic", "");
+  //name des zeitmessung topics
+  this->declare_parameter("alignment_time_topic", "");
+  //parameter ob gicp oder icp verwendet wird
+  this->declare_parameter("gicp", false);
+  //ob manuelle transformation gepublished wird
+  this->declare_parameter("publish_tf", false);
 
-//icp parameter
-this->declare_parameter("max_correspondence_distance", 0.0); 
-this->declare_parameter("maximum_iterations", 0);
-this->declare_parameter("transformation_epsilon", 0.0);
-this->declare_parameter("euclidean_fitness_epsilon", 0.0);
+  //icp parameter
+  this->declare_parameter("max_correspondence_distance", 0.0);
+  this->declare_parameter("maximum_iterations", 0);
+  this->declare_parameter("transformation_epsilon", 0.0);
+  this->declare_parameter("euclidean_fitness_epsilon", 0.0);
   ```
 ]
 
 #slide[
   = Parameterisierung über YAML file
-#text(size: 15pt)[
-#columns(2, gutter: 0pt)[
-  ```YAML
-  gicp_lio:
-    ros__parameters:
-      gicp: True
-      publish_tf: False
-      alignment_time_topic: "galignment_time"
-      odom_topic: "glidar_odom"
-      gicp_result_topic: "glidar_odom_eval"
-      max_correspondence_distance: 0.2
-      maximum_iterations: 100
-      transformation_epsilon: 0.000000001
-      euclidean_fitness_epsilon: 0.00001
-    ```
-  #colbreak()
-  ```YAML
-gicp_lio:
-  ros__parameters:
-    gicp: False
-    publish_tf: False
-    alignment_time_topic: "alignment_time"
-    odom_topic: "lidar_odom"
-    gicp_result_topic: "lidar_odom_eval"
-    max_correspondence_distance: 0.2
-    maximum_iterations: 100
-    transformation_epsilon: 0.000000001
-    euclidean_fitness_epsilon: 0.00001
-  ```
+  #text(size: 15pt)[
+    #columns(2, gutter: 0pt)[
+      ```YAML
+      gicp_lio:
+        ros__parameters:
+          gicp: True
+          publish_tf: False
+          alignment_time_topic: "galignment_time"
+          odom_topic: "glidar_odom"
+          gicp_result_topic: "glidar_odom_eval"
+          max_correspondence_distance: 0.2
+          maximum_iterations: 100
+          transformation_epsilon: 0.000000001
+          euclidean_fitness_epsilon: 0.00001
+      ```
+      #colbreak()
+      ```YAML
+      gicp_lio:
+        ros__parameters:
+          gicp: False
+          publish_tf: False
+          alignment_time_topic: "alignment_time"
+          odom_topic: "lidar_odom"
+          gicp_result_topic: "lidar_odom_eval"
+          max_correspondence_distance: 0.2
+          maximum_iterations: 100
+          transformation_epsilon: 0.000000001
+          euclidean_fitness_epsilon: 0.00001
+      ```
+    ]
   ]
 ]
-]
-
-#slide[
-  = Shell file
-#text(size: 10pt)[
-  ```sh
-screen -dmS icp_lio_corr_dist_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_corr_dist_01.yaml;
-screen -dmS icp_lio_corr_dist_02 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_corr_dist_02.yaml;
-screen -dmS icp_lio_corr_dist_05 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_corr_dist_05.yaml;
-screen -dmS icp_lio_fit_eps_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_fit_eps_01.yaml;
-screen -dmS icp_lio_fit_eps_0001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_fit_eps_0001.yaml;
-screen -dmS icp_lio_fit_eps_000001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_fit_eps_000001.yaml;
-screen -dmS icp_lio_iterations_10 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_iterations_10.yaml;
-screen -dmS icp_lio_iterations_100 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_iterations_100.yaml;
-screen -dmS icp_lio_iterations_1000 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_iterations_1000.yaml;
-
-screen -dmS gicp_lio_corr_dist_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_corr_dist_01.yaml;
-screen -dmS gicp_lio_corr_dist_02 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_corr_dist_02.yaml;
-screen -dmS gicp_lio_corr_dist_05 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_corr_dist_05.yaml;
-screen -dmS gicp_lio_fit_eps_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_fit_eps_01.yaml;
-screen -dmS gicp_lio_fit_eps_0001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_fit_eps_0001.yaml;
-screen -dmS gicp_lio_fit_eps_000001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_fit_eps_000001.yaml;
-screen -dmS gicp_lio_iterations_10 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_iterations_10.yaml;
-screen -dmS gicp_lio_iterations_100 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_iterations_100.yaml;
-screen -dmS gicp_lio_iterations_1000 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_iterations_1000.yaml;
-  ```
-]]
 
 
 #slide[
   = Implementierung in Ros
-  
-- ICP:
-```cpp
-pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-icp.setInputSource(src);
-icp.setInputTarget(tgt);
-pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
-icp.align(*output);
-```
 
-
-- GICP:
-```cpp
-pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> gicp;
-gicp.setInputSource(src);
-gicp.setInputTarget(tgt);
-pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
-gicp.align(*output);
-```
-]
-
-#slide[
-  = Implementierung in Ros
+  - ICP:
   ```cpp
-  int tick = -1;
+  pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+  icp.setInputSource(src);
+  icp.setInputTarget(tgt);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
+  icp.align(*output);
+  ```
 
-  //topic_callback
+
+  - GICP:
+  ```cpp
+  pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> gicp;
+  gicp.setInputSource(src);
+  gicp.setInputTarget(tgt);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
+  gicp.align(*output);
+  ```
+]
+
+#slide[
+  = Implementierung in Ros - Problem
+  ```cpp
+  // reduce tick speed in topic_callback
   tick++;
   if (tick % 3 != 0) {
     return;
   }
   ```
-
-  
-  - schlechte Ergebnisse wenn jeder Tick berücksichtigt wird
-  - deutlich bessere Ergebnisse wenn nur jeder dritte Tick berücksichtigt wird
-
-  - vergleich (bild von trajectory reicht)
+  #grid(
+    columns: 2,
+    [
+      #figure(
+        caption: "Trajectory plot with higher tick speed",
+        [
+          #image("./assets/trajectory_plot_corr_dist_old.png", width: 80%)
+        ],
+      )
+    ],
+    [
+      #figure(
+    caption: "Trajectory plot with lower tick speed",
+    [
+      #image("./assets/trajectory_plot_variance_round_1.png", width: 80%)
+    ] // TODO hier vielleicht neues bild auch mit corr dist
+  )
+    ],
+  )
+  // - schlechte Ergebnisse wenn jeder Tick berücksichtigt wird
+  // - deutlich bessere Ergebnisse wenn nur jeder dritte Tick berücksichtigt wird
 ]
 
 #slide[
   = Implementierung in Ros
 
-  - Zeitmessung Code zeigen und kurz erklären wieso transformation auch drin ist
   ```cpp
-auto start = std::chrono::high_resolution_clock::now();
-icp.align(*output);
-transformation = icp.getFinalTransformation();
-auto finish = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
+  icp.align(*output);
+  transformation = icp.getFinalTransformation();
+  auto finish = std::chrono::high_resolution_clock::now();
 
-std::chrono::duration<double> elapsed = finish - start;
-std_msgs::msg::Float64 time_msg;
-time_msg.data = elapsed.count();
-time_publisher_->publish(time_msg);
+  std::chrono::duration<double> elapsed = finish - start;
+  std_msgs::msg::Float64 time_msg;
+  time_msg.data = elapsed.count();
+  time_publisher_->publish(time_msg);
   ```
 ]
 
@@ -390,12 +397,22 @@ time_publisher_->publish(time_msg);
   - roboter war immer der gleiche
 ]
 
+#slide[
+  = Versuchsaufbau
+
+  - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
+  - drei unterschiedliche Maps
+  - unterschiedliche Parameterisierung
+]
+
+
 
 #slide[
   = (Bild-)Quellen
 
-  #bibliography("sources.yml",
+  #bibliography(
+    "sources.yml",
     style: "apa",
-    title: ""
+    title: "",
   )
 ]
