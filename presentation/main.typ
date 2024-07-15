@@ -10,6 +10,21 @@
 #set text(size: 16pt)
 #set text(lang: "de")
 
+#let comment(body) = {
+
+  let showInPDF = sys.inputs.at("with-comments", default: "false") == "true"
+  if showInPDF == true {
+    slide[
+      = Kommentar
+      #box(fill: rgb("#ededed"), width: 100%, height: 90%, inset: 1cm)[
+        body
+      ]
+    ]
+  } else {
+    none
+  }
+}
+
 #title-slide[
   = Generalized Iterative Closest Point
   Mündliche Prüfung in der Vorlesung Autonome Roboter
@@ -102,6 +117,10 @@
     )
 
   ]
+]
+
+#slide[
+  = Theorie - Point-to-Plane-ICP
 ]
 
 #slide[
@@ -324,11 +343,9 @@
 ]
 
 #slide[
-  = Implementierung in Ros
+  = Implementierung in Ros - Problem
   ```cpp
-  int tick = -1;
-
-  //topic_callback
+  // reduce tick speed in topic_callback
   tick++;
   if (tick % 3 != 0) {
     return;
@@ -338,17 +355,17 @@
     columns: 2,
     [
       #figure(
-        caption: "Trajectory plot without reducing ticks",
+        caption: "Trajectory plot with higher tick speed",
         [
-          #image("./assets/trajectory_plot_corr_dist_old.png", width: 70%)
+          #image("./assets/trajectory_plot_corr_dist_old.png", width: 80%)
         ],
       )
     ],
     [
       #figure(
-    caption: "Trajectory plot with reducing ticks",
+    caption: "Trajectory plot with lower tick speed",
     [
-      #image("./assets/trajectory_plot_variance_round_1.png", width: 70%)
+      #image("./assets/trajectory_plot_variance_round_1.png", width: 80%)
     ] // TODO hier vielleicht neues bild auch mit corr dist
   )
     ],
@@ -360,7 +377,6 @@
 #slide[
   = Implementierung in Ros
 
-  - Zeitmessung Code zeigen und kurz erklären wieso transformation auch drin ist
   ```cpp
   auto start = std::chrono::high_resolution_clock::now();
   icp.align(*output);
@@ -385,8 +401,11 @@
   = Versuchsaufbau
 
   - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-  - drei unterschiedliche
+  - drei unterschiedliche Maps
+  - unterschiedliche Parameterisierung
 ]
+
+
 
 #slide[
   = (Bild-)Quellen
