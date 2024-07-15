@@ -1,6 +1,4 @@
 #import "@preview/minideck:0.2.1"
-
-
 #import "@preview/lovelace:0.3.0": *
 
 
@@ -41,9 +39,18 @@
   + Fazit
 ]
 
-
 #slide[
   = Theorie
+
+  - Einzige wirkliche Quelle: "Generalized-ICP" von Segal, Haehnel & Thrun (2010)
+    - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
+    - Standard-ICP & point-to-plane in *generelles Framework* überführen
+    - *Probabilistische* Betrachtung
+    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen)
+]
+
+#slide[
+  = Theorie - Standard-ICP, point-to-plane, Generalized-ICP
 
   #grid(
     columns: 2,
@@ -69,9 +76,41 @@
 
 
 #slide[
-  = Theorie
+  = Theorie - Standard-ICP
 
   - Einzige wirkliche Quelle: "Generalized-ICP" von Segal, Haehnel & Thrun (2010)
+    - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
+    - Standard-ICP & point-to-plane in *generelles Framework* überführen
+    - *Probabilistische* Betrachtung
+    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen)
+]
+
+#slide[
+
+  = Theorie - GICP Algorithmus
+
+  #pseudocode-list[
+    + $T arrow.l T_0$
+    + *while* not converged *do*
+      + *for* $i arrow.l 1$ *to* $N$ *do*
+        + $m_i arrow.l "FindClosestPointInA"(T dot.op b_i)$
+        + *if* $parallel m_i - T dot.op b_i parallel lt.eq d_(max)$ *then*
+          + $C_i^A arrow.l "computeCovarianceMatrix"(T dot.op b_i)$
+          + $C_i^B arrow.l "computeCovarianceMatrix"(a_i)$
+        + *else*
+          + $C_i^A arrow.l 0$; #h(1em) $C_i^B arrow.l 0$
+        + *end*
+        + $d_i^((T)) arrow.l b_i - T dot.op a_i$  #h(3em)  \// Residuum / Abstand
+      + *end*
+      + $T arrow.l arg min_T {sum_i d_i^(T)^T  (C_i^B + T C_i^A T^T)^(-1) d_i^((T))}$ 
+    + *end*     
+  ]
+]
+
+
+#slide[
+  = Theorie
+
   - Algorithmus (ausführlicher als Orginal):
   #pseudocode-list[
     + $T$ = $T_0$
