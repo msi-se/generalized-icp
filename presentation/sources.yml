@@ -1,0 +1,18 @@
+segal-gicp:
+  type: Article
+  title: Generalized-ICP
+  author:
+  - Segal, Aleksandr V.
+  - Hähnel, Dirk
+  - Thrun, Sebastian
+  date: 2009
+  url: https://api.semanticscholar.org/CorpusID:231748613
+  parent:
+    type: proceedings
+    title: 'Robotics: Science and Systems'
+
+icp-notebook:
+  author: Igor Bogoslavskyi
+  type: Web
+  url: https://nbviewer.org/github/niosus/notebooks/blob/master/icp.ipynb
+  date: 2021

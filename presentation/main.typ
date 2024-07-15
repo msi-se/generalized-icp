@@ -93,7 +93,7 @@
 
     // icp gif
     #figure(
-      caption: "Standard-ICP (https://nbviewer.org/github/niosus/notebooks/blob/master/icp.ipynb)",
+      caption: [Standard-ICP @icp-notebook],
       [
         #image("./assets/icp.gif", width: 100%, format: "gif")
       ]
@@ -101,9 +101,6 @@
 
   ]
 ]
-
-
-// https://nbviewer.org/github/niosus/notebooks/blob/master/icp.ipynb 
 
 #slide[
   = Theorie - Standard-ICP, point-to-plane, Generalized-ICP
@@ -154,7 +151,8 @@
 
 #slide[
 
-  = Theorie - GICP-Algorithmus - Variationen für Kovarianzmatrizen
+  = Theorie - GICP-Algorithmus
+  == Variationen für Kovarianzmatrizen
 
   #pseudocode-list(
     line-numbering: none
@@ -182,9 +180,8 @@
         - verwendet *PCA* (Principal Component Analysis/Hauptkomponentenanalyse)
 
   #colbreak()
-
   #figure(
-    caption: "Plane-to-plane (\"Generalized-ICP\" von Segal et al.)",
+    caption: [Plane-to-plane @segal-gicp],
     [
       #image("./assets/plane-to-plane.png", width: 100%)
     ]
@@ -221,3 +218,12 @@
   #emph[$->$ CODE OVERVIEW]
 ]
 
+
+#slide[
+  = (Bild-)Quellen
+
+  #bibliography("sources.yml",
+    style: "apa",
+    title: ""
+  )
+]
