@@ -121,6 +121,22 @@
 
 #slide[
   = Theorie - Point-to-Plane-ICP
+  #columns(2)[
+    - *Point to Plane ICP* ist eine Erweiterung des ICP Algorithmus
+    - vergleicht korrespondierende Punkte in einer Wolke zu Ebenen in der anderen
+    - Ebenen wird durch Punkt und Normalenvektor definiert
+
+    #v(1cm)
+    $T arrow.l arg min_T {sum_i ((T dot.op b_i - m_i) * bold(n_i))^2}$
+    
+    #colbreak()
+    #figure(
+      caption: [Point-to-Plane-ICP @point-to-plane-icp],
+      [
+        #image("./assets/point-to-plane.png", width: 80%)
+      ],
+    )
+  ]
 ]
 
 #slide[
@@ -395,6 +411,8 @@
 
   - jeweils Bild reinmachen
   - roboter war immer der gleiche
+
+  
 ]
 
 #slide[
@@ -405,6 +423,35 @@
   - unterschiedliche Parameterisierung
 ]
 
+#slide[
+  = Turtlebot3 World
+
+  #figure(
+    caption: "Screenshot Gazebo",
+    [
+      #image("./assets/turtlebot3_world.jpg", width: 90%)
+    ])
+]
+
+#slide[
+  = Turtlebot3 ICP World
+
+  #figure(
+    caption: "Screenshot Gazebo",
+    [
+      #image("./assets/turtlebot3_icp_world.jpg", width: 90%)
+    ])
+]
+
+#slide[
+  = Turtlebot3 World
+
+  #figure(
+    caption: "Screenshot Gazebo",
+    [
+      #image("./assets/turtlebot3_dqn_stage1.jpg", width: 90%)
+    ])
+]
 
 
 #slide[
