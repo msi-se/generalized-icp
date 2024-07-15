@@ -4,6 +4,8 @@ import random
 import pygame
 from pygame.locals import QUIT
 from scipy.optimize import fmin_cg
+from scipy.optimize import minimize
+from scipy.optimize import newton
 
 def compute_covariance_matrix(points, max_distance=30):
     """Find the k nearest neighbors of each point in the cloud and compute the covariance matrices with them."""
@@ -36,25 +38,6 @@ def loss(offset, source_points, target_points, weight_matrices):
     weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
     return np.sum(residuals * weighted_residuals)
 
-def grad_loss(offset, source_points, target_points, weight_matrices):
-    """Compute the gradient of the loss function."""
-    translation = offset[:2]
-    rotation_matrix = rot_mat(offset[2])
-    gradient = np.zeros(3)
-    residuals = target_points - source_points @ rotation_matrix.T - translation
-    weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
-    
-    # Gradient with respect to translation
-    gradient[:2] = -2 * np.sum(weighted_residuals, axis=0)
-    
-    # Gradient with respect to rotation
-    grad_rotation = -2 * (weighted_residuals.T @ source_points)
-    grad_rotation_theta = np.array([[-np.sin(offset[2]), -np.cos(offset[2])], [np.cos(offset[2]), -np.sin(offset[2])]])
-    gradient[2] = np.sum(grad_rotation * grad_rotation_theta)
-    
-    return gradient
-
-
 def offset_to_transformation_matrix(offset):
     """Convert the offset parameters (tx, ty, theta) to a transformation matrix."""
     translation = offset[:2]
@@ -65,36 +48,24 @@ def offset_to_transformation_matrix(offset):
     transformation_matrix[:2, 2] = translation
     return transformation_matrix
 
-def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
+def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
     """
-    Generalized Iterative Closest Point (GICP) algorithm to align two 2D point clouds.
-    :param source_points: Source point cloud (Nx2)
-    :param target_points: Target point cloud (Nx2)
-    :param max_iterations: Maximum number of iterations
-    :param tolerance: Tolerance for convergence
-    :param epsilon: Small value to avoid numerical issues
-    :return: Transformation matrix, all transformations, source covariance matrices, target covariance matrices
-
-    Algorithm from the Stanford paper
-        Generalized-ICP (Segal, Haehnel, Thrun)
-
-        Input: Two point clouds: A = {ai}, B = {bi}
-        An initial transformation: T0
-
-        Output: The correct transformation, T, which aligns A and B
-
-        1: T ← T0
-        2: while not converged do
-        3:     for i ← 1 to N do
-        4:         mi ← FindClosestPointInA(T · bi)
-        5:         if ||mi - T · bi|| ≤ dmax then
-        6:             wi ← 1
-        7:         else
-        8:             wi ← 0
-        9:         end if
-        10:    end for
-        11:    T ← argmin_T Σi (di^T (C_Bi + T C_Ai T^T)^-1 di)
-        12: end while
+    + $T arrow.l T_0$
+    + *while* not converged *do*
+      + *for* $i arrow.l 1$ *to* $N$ *do*
+        + $m_i arrow.l$ `FindClosestPointInA`$(T dot.op b_i)$
+        + $d_i^((T)) arrow.l b_i - T dot.op m_i$      // Residuum / Abstand
+        + *if* $parallel d_i^((T)) parallel lt.eq d_(max)$ *then*
+          + $C_i^A arrow.l$ `computeCovarianceMatrix`$(T dot.op b_i)$
+          + $C_i^B arrow.l$ `computeCovarianceMatrix`$(m_i)$
+        + *else*
+          + $C_i^A arrow.l 0$; #h(1em) $C_i^B arrow.l 0$
+        + *end*
+      + *end*
+      + $T arrow.l arg min_T {
+            sum_i d_i^(T)^T (C_i^B + T C_i^A T^T)^(-1) d_i^((T))
+          }$  // Maximum Likelihood Estimation
+    + *end*
 
     """
 
@@ -136,22 +107,26 @@ def gicp(source_points, target_points, max_iterations=60, tolerance=1e-6, epsilo
 
             corresponding_target_points[i] = target_points[index]
 
-            # Compute the weight matrix by combining the covariance matrices of the target and source points
-            combined_cov_matrix = source_cov_matrices[i] + np.eye(2) @ target_cov_matrices[index] @ np.eye(2).T + epsilon * np.eye(2)
+            # Compute the weight matrix by combining the covariance matrices of the target and source points (target = A; source = B)
+            combined_cov_matrix = source_cov_matrices[i] + target_cov_matrices[index]
             weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
 
-        # Minimize the loss function / cost function using a nonlinear conjugate gradient algorithm
+        # Minimize the loss function / cost function using maximum likelihood estimation
         loss_function = lambda x: loss(x, source_points, corresponding_target_points, weight_matrices)
-        grad_loss_function = lambda x: grad_loss(x, source_points, corresponding_target_points, weight_matrices)
+
         # x0 parameter: last offset -> "ITERATIVE" closest point
-        out = fmin_cg(f=loss_function, x0=offset, fprime=grad_loss_function, disp=False, full_output=True)
-        offset = out[0]
-        min_loss = out[1]
+        out = minimize(loss_function, x0=offset, method='L-BFGS-B', tol=epsilon) # L-BFGS-B: Limited-memory Broyden-Fletcher-Goldfarb-Shanno algorithm
+        offset = out["x"]
+        min_loss = out["fun"]
+        delta_loss = np.abs(last_min_loss - min_loss)
+
+        print(f"Loss: {min_loss:16.10f}, Delta Loss: {delta_loss:16.10f}, Iteration: {iteration:3d}, Distances: {np.mean(distances):9.4f}, Offset: trans: { offset[0]:9.4f}, { offset[1]:9.4f}, rot: { offset[2]:9.4f}")
 
         # Check for convergence
-        if np.abs(last_min_loss - min_loss) < tolerance:
+        if delta_loss < tolerance:
             print("Converged at iteration", iteration)
             break
+
 
         # Update transformation matrix
         last_min_loss = min_loss
