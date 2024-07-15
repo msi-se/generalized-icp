@@ -4,8 +4,6 @@ import random
 import pygame
 from pygame.locals import QUIT
 from scipy.optimize import fmin_cg
-from scipy.optimize import minimize
-from scipy.optimize import newton
 
 def compute_covariance_matrix(points, max_distance=30):
     """Find the k nearest neighbors of each point in the cloud and compute the covariance matrices with them."""
@@ -42,14 +40,29 @@ def offset_to_transformation_matrix(offset):
 
 def loss(offset, source_points, target_points, weight_matrices):
     """Compute the loss function for the given transformation parameters."""
-    # $d_i^((T)) arrow.l b_i - T dot.op m_i$
-    # $T arrow.l arg min_T { sum_i d_i^(T)^T (C_i^B + T C_i^A T^T)^(-1) d_i^((T)) }$  // Maximum Likelihood Estimation
+    translation = offset[:2]
+    rotation_matrix = rot_mat(offset[2])
+    residuals = target_points - source_points @ rotation_matrix.T - translation
+    weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
+    return np.sum(residuals * weighted_residuals)
 
-    def loss_i(i):
-        d = target_points[i] - transform_points(source_points[i], offset[:2], offset[2])
-        return np.dot(d, np.dot(weight_matrices[i], d))
+def grad_loss(offset, source_points, target_points, weight_matrices):
+    """Compute the gradient of the loss function."""
+    translation = offset[:2]
+    rotation_matrix = rot_mat(offset[2])
+    gradient = np.zeros(3)
+    residuals = target_points - source_points @ rotation_matrix.T - translation
+    weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
     
-    return np.sum([loss_i(i) for i in range(len(source_points))])
+    # Gradient with respect to translation
+    gradient[:2] = -2 * np.sum(weighted_residuals, axis=0)
+    
+    # Gradient with respect to rotation
+    grad_rotation = -2 * (weighted_residuals.T @ source_points)
+    grad_rotation_theta = np.array([[-np.sin(offset[2]), -np.cos(offset[2])], [np.cos(offset[2]), -np.sin(offset[2])]])
+    gradient[2] = np.sum(grad_rotation * grad_rotation_theta)
+    
+    return gradient
 
 def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
     """
@@ -69,7 +82,6 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, epsil
             sum_i d_i^(T)^T (C_i^B + T C_i^A T^T)^(-1) d_i^((T))
           }$  // Maximum Likelihood Estimation
     + *end*
-
     """
 
     # Convert points to numpy arrays if they are not already
@@ -116,14 +128,15 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, epsil
 
         # Minimize the loss function / cost function using maximum likelihood estimation
         loss_function = lambda x: loss(x, source_points, corresponding_target_points, weight_matrices)
-
+        grad_loss_function = lambda x: grad_loss(x, source_points, corresponding_target_points, weight_matrices)
+        
         # x0 parameter: last offset -> "ITERATIVE" closest point
-        out = minimize(loss_function, x0=offset, method='L-BFGS-B', tol=epsilon) # L-BFGS-B: Limited-memory Broyden-Fletcher-Goldfarb-Shanno algorithm
-        offset = out["x"]
-        min_loss = out["fun"]
+        out = fmin_cg(f=loss_function, x0=offset, fprime=grad_loss_function, disp=False, full_output=True)
+        offset = out[0]
+        min_loss = out[1]
         delta_loss = np.abs(last_min_loss - min_loss)
 
-        print(f"Loss: {min_loss:16.10f}, Delta Loss: {delta_loss:16.10f}, Iteration: {iteration:3d}, Distances: {np.mean(distances):9.4f}, Offset: trans: { offset[0]:9.4f}, { offset[1]:9.4f}, rot: { offset[2]:9.4f}")
+        # print(f"Loss: {min_loss:16.10f}, Delta Loss: {delta_loss:16.10f}, Iteration: {iteration:3d}, Distances: {np.mean(distances):9.4f}, Offset: trans: { offset[0]:9.4f}, { offset[1]:9.4f}, rot: { offset[2]:9.4f}")
 
         # Check for convergence
         if delta_loss < tolerance:
