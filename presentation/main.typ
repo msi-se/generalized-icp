@@ -25,7 +25,7 @@
 ]
 
 #slide[
-  = Agenda
+  = Agenda 
 
   + Einführung
   + Theorie
@@ -46,7 +46,7 @@
     - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
     - Standard-ICP & point-to-plane in *generelles Framework* überführen
     - *Probabilistische* Betrachtung
-    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) →  *plane-to-plane*
+    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) →  *plane-to-plane* 
 ]
 
 #slide[
@@ -75,6 +75,7 @@
   - minimiert die quadratischen Abstände korrespondierender Punkte
 
   #columns(2)[
+  #text(size: 14.9pt)[
     #pseudocode-list[
       + $T arrow.l T_0$
       + *while* not converged *do*
@@ -89,6 +90,7 @@
         + $T arrow.l arg min_T {sum_i w_i (parallel T dot.op b_i - m_i parallel)^2}$
       + *end*     
     ]
+  ]
     #colbreak()
 
     // icp gif
@@ -235,6 +237,157 @@
   #v(1cm)
 
   #emph[$->$ CODE OVERVIEW]
+]
+
+#slide[
+  = Parameterisierung
+
+  ```cpp
+//name des odom topics
+this->declare_parameter("odom_topic", "");
+//name des icp topics
+this->declare_parameter("gicp_result_topic", "");  
+//name des zeitmessung topics
+this->declare_parameter("alignment_time_topic", "");    
+//parameter ob gicp oder icp verwendet wird
+this->declare_parameter("gicp", false); 
+//ob manuelle transformation gepublished wird
+this->declare_parameter("publish_tf", false); 
+
+//icp parameter
+this->declare_parameter("max_correspondence_distance", 0.0); 
+this->declare_parameter("maximum_iterations", 0);
+this->declare_parameter("transformation_epsilon", 0.0);
+this->declare_parameter("euclidean_fitness_epsilon", 0.0);
+  ```
+]
+
+#slide[
+  = Parameterisierung über YAML file
+#text(size: 15pt)[
+#columns(2, gutter: 0pt)[
+  ```YAML
+  gicp_lio:
+    ros__parameters:
+      gicp: True
+      publish_tf: False
+      alignment_time_topic: "galignment_time"
+      odom_topic: "glidar_odom"
+      gicp_result_topic: "glidar_odom_eval"
+      max_correspondence_distance: 0.2
+      maximum_iterations: 100
+      transformation_epsilon: 0.000000001
+      euclidean_fitness_epsilon: 0.00001
+    ```
+  #colbreak()
+  ```YAML
+gicp_lio:
+  ros__parameters:
+    gicp: False
+    publish_tf: False
+    alignment_time_topic: "alignment_time"
+    odom_topic: "lidar_odom"
+    gicp_result_topic: "lidar_odom_eval"
+    max_correspondence_distance: 0.2
+    maximum_iterations: 100
+    transformation_epsilon: 0.000000001
+    euclidean_fitness_epsilon: 0.00001
+  ```
+  ]
+]
+]
+
+#slide[
+  = Shell file
+#text(size: 10pt)[
+  ```sh
+screen -dmS icp_lio_corr_dist_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_corr_dist_01.yaml;
+screen -dmS icp_lio_corr_dist_02 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_corr_dist_02.yaml;
+screen -dmS icp_lio_corr_dist_05 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_corr_dist_05.yaml;
+screen -dmS icp_lio_fit_eps_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_fit_eps_01.yaml;
+screen -dmS icp_lio_fit_eps_0001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_fit_eps_0001.yaml;
+screen -dmS icp_lio_fit_eps_000001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_fit_eps_000001.yaml;
+screen -dmS icp_lio_iterations_10 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_iterations_10.yaml;
+screen -dmS icp_lio_iterations_100 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_iterations_100.yaml;
+screen -dmS icp_lio_iterations_1000 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/icp_lio_iterations_1000.yaml;
+
+screen -dmS gicp_lio_corr_dist_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_corr_dist_01.yaml;
+screen -dmS gicp_lio_corr_dist_02 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_corr_dist_02.yaml;
+screen -dmS gicp_lio_corr_dist_05 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_corr_dist_05.yaml;
+screen -dmS gicp_lio_fit_eps_01 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_fit_eps_01.yaml;
+screen -dmS gicp_lio_fit_eps_0001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_fit_eps_0001.yaml;
+screen -dmS gicp_lio_fit_eps_000001 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_fit_eps_000001.yaml;
+screen -dmS gicp_lio_iterations_10 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_iterations_10.yaml;
+screen -dmS gicp_lio_iterations_100 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_iterations_100.yaml;
+screen -dmS gicp_lio_iterations_1000 ros2 run my_localization gicp_lio --ros-args --params-file /home/auro1/ros2_ws/src/team01/my_localization/config/gicp_lio_iterations_1000.yaml;
+  ```
+]]
+
+
+#slide[
+  = Implementierung in Ros
+  
+- ICP:
+```cpp
+pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+icp.setInputSource(src);
+icp.setInputTarget(tgt);
+pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
+icp.align(*output);
+```
+
+
+- GICP:
+```cpp
+pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> gicp;
+gicp.setInputSource(src);
+gicp.setInputTarget(tgt);
+pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
+gicp.align(*output);
+```
+]
+
+#slide[
+  = Implementierung in Ros
+  ```cpp
+  int tick = -1;
+
+  //topic_callback
+  tick++;
+  if (tick % 3 != 0) {
+    return;
+  }
+  ```
+
+  
+  - schlechte Ergebnisse wenn jeder Tick berücksichtigt wird
+  - deutlich bessere Ergebnisse wenn nur jeder dritte Tick berücksichtigt wird
+
+  - vergleich (bild von trajectory reicht)
+]
+
+#slide[
+  = Implementierung in Ros
+
+  - Zeitmessung Code zeigen und kurz erklären wieso transformation auch drin ist
+  ```cpp
+auto start = std::chrono::high_resolution_clock::now();
+icp.align(*output);
+transformation = icp.getFinalTransformation();
+auto finish = std::chrono::high_resolution_clock::now();
+
+std::chrono::duration<double> elapsed = finish - start;
+std_msgs::msg::Float64 time_msg;
+time_msg.data = elapsed.count();
+time_publisher_->publish(time_msg);
+  ```
+]
+
+#slide[
+  = 3 unterschiedliche Maps
+
+  - jeweils Bild reinmachen
+  - roboter war immer der gleiche
 ]
 
 
