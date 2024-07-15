@@ -30,14 +30,6 @@ def rot_mat(theta):
     c, s = np.cos(theta), np.sin(theta)
     return np.array([[c, -s], [s, c]])
 
-def loss(offset, source_points, target_points, weight_matrices):
-    """Compute the loss function for the given transformation parameters."""
-    translation = offset[:2]
-    rotation_matrix = rot_mat(offset[2])
-    residuals = target_points - source_points @ rotation_matrix.T - translation
-    weighted_residuals = np.sum(weight_matrices * residuals[:, None, :], axis=2)
-    return np.sum(residuals * weighted_residuals)
-
 def offset_to_transformation_matrix(offset):
     """Convert the offset parameters (tx, ty, theta) to a transformation matrix."""
     translation = offset[:2]
@@ -47,6 +39,17 @@ def offset_to_transformation_matrix(offset):
     transformation_matrix[:2, :2] = rotation_matrix
     transformation_matrix[:2, 2] = translation
     return transformation_matrix
+
+def loss(offset, source_points, target_points, weight_matrices):
+    """Compute the loss function for the given transformation parameters."""
+    # $d_i^((T)) arrow.l b_i - T dot.op m_i$
+    # $T arrow.l arg min_T { sum_i d_i^(T)^T (C_i^B + T C_i^A T^T)^(-1) d_i^((T)) }$  // Maximum Likelihood Estimation
+
+    def loss_i(i):
+        d = target_points[i] - transform_points(source_points[i], offset[:2], offset[2])
+        return np.dot(d, np.dot(weight_matrices[i], d))
+    
+    return np.sum([loss_i(i) for i in range(len(source_points))])
 
 def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
     """
