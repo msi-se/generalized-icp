@@ -50,6 +50,62 @@
 ]
 
 #slide[
+  = Theorie - Mathematische Grundlagen
+
+  === Kovarianzmatrix
+
+  - beschreibt die Streuung von Zufallsvariablen
+  - für Punkte in Punktwolken: Verteilung der Punkte in der Umgebung
+
+  #v(1cm)
+
+  === Maximum Likelihood Estimation (MLE)
+
+  - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
+  - der Paramter wird ausgewählt, der die beobachteten Daten am wahrscheinlichsten macht  
+  - oft verwendet um: $arg max_p ...$ / $arg min_p ...$ zu finden
+]
+
+
+#slide[
+  = Theorie - Standard-ICP
+
+  - *Iterative Closest Point* (ICP) ist ein Algorithmus, um die Transformation zwischen zwei Punktwolken zu schätzen
+  - vergleicht korrespondierende Punkte in beiden Wolken
+  - minimiert die quadratischen Abstände korrespondierender Punkte
+
+  #columns(2)[
+    #pseudocode-list[
+      + $T arrow.l T_0$
+      + *while* not converged *do*
+        + *for* $i arrow.l 1$ *to* $N$ *do*
+          + $m_i arrow.l$ `FindClosestPointInA`$(T dot.op b_i)$
+          + *if* $parallel m_i - b_i parallel lt.eq d_(max)$ *then*
+            + $w_i arrow.l 1$
+          + *else*
+            + $w_i arrow.l 0$
+          + *end*
+        + *end*
+        + $T arrow.l arg min_T {sum_i w_i (parallel T dot.op b_i - m_i parallel)^2}$
+      + *end*     
+    ]
+    #colbreak()
+
+    // icp gif
+    #figure(
+      caption: "Standard-ICP (https://nbviewer.org/github/niosus/notebooks/blob/master/icp.ipynb)",
+      [
+        #image("./assets/icp.gif", width: 100%, format: "gif")
+      ]
+    )
+
+  ]
+]
+
+
+// https://nbviewer.org/github/niosus/notebooks/blob/master/icp.ipynb 
+
+#slide[
   = Theorie - Standard-ICP, point-to-plane, Generalized-ICP
 
   #grid(
@@ -74,20 +130,9 @@
   #v(1cm)
 ]
 
-
-#slide[
-  = Theorie - Standard-ICP
-
-  - Einzige wirkliche Quelle: "Generalized-ICP" von Segal, Haehnel & Thrun (2010)
-    - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
-    - Standard-ICP & point-to-plane in *generelles Framework* überführen
-    - *Probabilistische* Betrachtung
-    - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen)
-]
-
 #slide[
 
-  = Theorie - GICP Algorithmus
+  = Theorie - GICP-Algorithmus
 
   #pseudocode-list[
     + $T arrow.l T_0$
@@ -102,14 +147,14 @@
           + $C_i^A arrow.l 0$; #h(1em) $C_i^B arrow.l 0$
         + *end*
       + *end*
-      + $T arrow.l arg min_T {sum_i d_i^(T)^T  (C_i^B + T C_i^A T^T)^(-1) d_i^((T))}$ 
+      + $T arrow.l arg min_T {sum_i d_i^(T)^T  (C_i^B + T C_i^A T^T)^(-1) d_i^((T))}$  #h(1em) #text(gray)[\// Maximum Likelihood Estimation]
     + *end*     
   ]
 ]
 
 #slide[
 
-  = Theorie - GICP Algorithmus - Variationen für Kovarianzmatrizen
+  = Theorie - GICP-Algorithmus - Variationen für Kovarianzmatrizen
 
   #pseudocode-list(
     line-numbering: none
@@ -122,38 +167,31 @@
     - $C_i^A arrow.l 0$
     - $C_i^B arrow.l 1$ #h(3.3em) → keine Oberflächenstruktur berücksichtigt
 
-#v(1cm)
+#v(0.2cm)
 
 - für *point-to-plane*:
     - $C_i^A arrow.l 0$
     - $C_i^B arrow.l P_i^(-1)$ #h(2em) → $P_i$ ist die Projektionsmatrix auf die Ebene (beinhaltet Normalenvektor)
 
-#v(1cm)
+#v(0.2cm)
 
-- für *plane-to-plane* (im Paper vorgeschlagene Methode):
-    - `computeCovarianceMatrix` berechnet Kovarianzmatrix unter Betrachtung der nächsten 20 Punkte
-      - verwendet *PCA* (Principal Component Analysis/Hauptkomponentenanalyse)
+#columns(2)[
+
+  - für *plane-to-plane* (im Paper vorgeschlagene Methode):
+      - `computeCovarianceMatrix` berechnet Kovarianzmatrix unter Betrachtung der nächsten 20 Punkte
+        - verwendet *PCA* (Principal Component Analysis/Hauptkomponentenanalyse)
+
+  #colbreak()
+
+  #figure(
+    caption: "Plane-to-plane (\"Generalized-ICP\" von Segal et al.)",
+    [
+      #image("./assets/plane-to-plane.png", width: 100%)
+    ]
+  )
+
+  ]
 ]
-
-
-// #slide[
-//   = Theorie
-
-//   - Algorithmus (ausführlicher als Orginal):
-//   #pseudocode-list[
-//     + $T$ = $T_0$
-//     + $"CA"$ = computeCovarianceMatrices($A$)
-//     + *while* has not converged *do*
-//       + *for* $i$ = 1 to $N$ *do*
-//         + $m_i$ = findClosestPointInA($T * b_i$)
-//         + $c_i$ = computeCovarianceMatrix($T * b_i$)
-//         + $w_i$ = computeWeightMatrix($c_i, "CA"_i$)
-//       + *end*
-//       + $T$ = optimizeLossFunction($T, A, B, W$)
-//     + *end*
-//   ]
-// ]
-
 
 #slide[
   = Demo: Eigene Implementierung in Python
@@ -182,3 +220,4 @@
 
   #emph[$->$ CODE OVERVIEW]
 ]
+
