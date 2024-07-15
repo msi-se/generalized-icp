@@ -191,6 +191,25 @@
 ]
 
 #slide[
+  = Theorie - GICP-Algorithmus
+  == Paper Ergebnisse @segal-gicp
+
+  - GICP *genauer* bei simulierten und realen Daten
+  - immer noch relativ schnell und einfach
+  - Nutzen von Oberflächenstruktur *minimiert Einfluss von falschen Korrespondenzen*
+  - Parameter-Wahl für $d_(max)$ nicht mehr so kritisch → leichter einsetzbar in *unterschiedlichen Szenarien*
+
+  #v(1cm)
+
+  #figure(
+    caption: [Durchschnittsfehler als Funktion von $d_(max)$ @segal-gicp],
+    [
+      #image("./assets/paper-results.png", width: 60%)
+    ]
+  )
+]
+
+#slide[
   = Demo: Eigene Implementierung in Python
 
   - Paper sehr mathematisch
