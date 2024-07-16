@@ -74,6 +74,7 @@
     + Problem
     + Zeitmessung
     + Maps
+  + Auswertung
   + Fazit
   + (Bild-)Quellen
 ]
@@ -705,6 +706,12 @@
       #image("./assets/turtlebot3_dqn_stage1.jpg", width: 80%)
     ],
   )
+]
+
+#slide[
+  = Auswertung
+
+  - Link zu Bokeh Files
 ]
 
 #slide[
