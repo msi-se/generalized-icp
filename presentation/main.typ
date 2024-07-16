@@ -865,6 +865,13 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
       #image("./assets/turtlebot3_world.jpg", width: 80%)
     ],
   )
+
+  #comment[
+    - Turtlebot3 World: Standard Gazebo-Welt für Turtlebot3
+    - sechseck und 9 zylinder
+    - mittel komplexe Umgebung 
+    - viele Datenpunkte
+  ]
 ]
 
 #slide[
@@ -877,6 +884,13 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
       #image("./assets/turtlebot3_dqn_stage1.jpg", width: 80%)
     ],
   )
+
+  #comment[
+    - rechteck 
+    - keine Hindernisse
+    - einfachste Umgebung
+    - wenig Datenpunkte
+  ]
 ]
 
 #slide[
@@ -889,6 +903,14 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
       #image("./assets/turtlebot3_icp_world.jpg", width: 80%)
     ],
   )
+
+  #comment[
+    - icp welt von aufgabe 2
+    - unterschiedlichste objekte 
+    - keine begrenzung der umgebung
+    - komplexeste Umgebung 
+    - mittel viele Datenpunkte
+  ]
 ]
 
 
