@@ -294,6 +294,30 @@
   )
 ]
 
+#comment[
+
+  - hier nochmal ein Überblick über die verschiedenen ICP-Verfahren
+
+  - Point-to-Point: Standard-ICP
+    - vergleicht Punkt mit Punkt
+    - einfach und schnell
+    - aber nicht robust sehr empfindlich gegenüber Parameterwahl
+
+  - Point-to-Plane:
+    - vergleicht Punkt mit Ebene durch Normalenvektor
+    - besser als Standard-ICP
+    - nutzt Oberflächenstruktur einer Punktwolke
+    - aber eben nur von einer
+
+  - Generalized-ICP:
+    - quasi "Plane-to-Plane"
+    - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
+    - wenn in Ebene → Kovarianzmatrix ist "flach"
+      - sieht man in Bild rechts
+    - nutzt Oberflächenstruktur beider Punktwolken
+    - welche Ergebnisse dies hat, dazu später mehr
+]
+
 #slide[
 
   = Theorie - GICP-Algorithmus
@@ -317,6 +341,8 @@
     + *end*
   ]
 ]
+
+
 
 #slide[
 
