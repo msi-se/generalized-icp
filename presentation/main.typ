@@ -11,13 +11,16 @@
 #set text(lang: "de")
 
 #let comment(body) = {
-
   let showInPDF = sys.inputs.at("with-comments", default: "false") == "true"
+  // let showInPDF = true
   if showInPDF == true {
     slide[
       = Kommentar
       #box(fill: rgb("#ededed"), width: 100%, height: 90%, inset: 1cm)[
-        #body
+        #set text(size: 13pt)
+        #columns(2)[
+          #body
+        ]
       ]
     ]
   } else {
