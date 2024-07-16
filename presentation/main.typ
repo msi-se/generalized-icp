@@ -155,7 +155,18 @@
   - oft verwendet um: $arg max_p ...$ / $arg min_p ...$ zu finden
 ]
 
+#comment[
+  - Mathematische Grundlagen sind lediglich für ein gemeinsames Verständnis
+  - sodass auch Leute, die nicht die Vorlesung besucht haben, den Vortrag verstehen könnten
 
+  - Kovarianzmatrix beschreibt die Streuung von Zufallsvariablen
+  - in unserem Kontext: Verteilung von Punkte in der Umgebung
+  - wo unsere Punkte mit welcher Wahrscheinlichkeit liegen
+
+  - Maximum Likelihood Estimation brauchen wir für die Schätzung der Transformation bei ICP und GICP
+  - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
+  - versucht quasi die Parameter zu finden, die eine gegebene Wahrscheinlichkeitsverteilung am besten beschreiben
+]
 
 
 #slide[
