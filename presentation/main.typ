@@ -560,9 +560,7 @@
   = Demo: Eigene Implementierung in Python
   == Code Overview - GICP
 
-  #v(1cm)
   GICP-Funktion:
-  #v(1cm)
 
   ```python
 def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6,
@@ -573,7 +571,10 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6,
         ...
 
         # Minimize the loss function function
-        transformation = fmin_cg(f=loss, x0=transformation, fprime=grad_loss)
+        transformation = scipy.optimize.fmin_cg(
+            f=loss,
+            x0=transformation,
+            fprime=grad_loss)
 
         # Check for convergence
         if delta_loss < tolerance:
@@ -609,10 +610,12 @@ transformation_matrix = gicp(
   #v(1cm)
 
   ```python
+# Get delta x, y and yaw from transformation matrix
 delta_x = -transformation_matrix[0, 2]
 delta_y = -transformation_matrix[1, 2]
 delta_yaw = -np.arctan2(transformation_matrix[1, 0], transformation_matrix[0, 0])
 
+# Calculate estimations for new position and orientation
 new_estimated_x = last_estimated_x
     + delta_x * math.cos(last_estimated_yaw)
     - delta_y * math.sin(last_estimated_yaw)
