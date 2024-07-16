@@ -659,6 +659,26 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
     - Bag Files mit Topics
     - Python-Skript zur Auswertung
     - Bokeh für Visualisierung
+
+    #comment[
+    - Vorbedingungen:
+
+      - Bag File: beispiel trajektorie wird in ROS-Bag-Datei gespeichert, die als Input für die Experimente dient und immmer den gleichen Datensatz zur Verfügung stellt
+      - Skript für Nodes: Skripte, die die notwendigen ROS-Nodes starten und konfigurieren.
+      - Yaml-Dateien als Konfiguration: Konfigurationsdateien im YAML-Format, die die Parameter und Einstellungen für die Experimente enthalten.
+
+    - Szenarien:
+      - Drei unterschiedliche Maps: Die Experimente werden auf drei verschiedenen Karten durchgeführt, um die Robustheit der Algorithmen in unterschiedlichen Umgebungen zu überprüfen.
+      - Unterschiedliche Parameterisierung: Es werden verschiedene Parametereinstellungen getestet, um die Auswirkungen auf die Genauigkeit und Laufzeit der Algorithmen zu analysieren.
+      - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Jedes Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
+
+    - Auswertung
+      - Bag Files mit Topics: Die während der Experimente generierten Daten werden in ROS-Bag-Dateien gespeichert, die verschiedene Topics enthalten, die für die Auswertung relevant sind.
+      - Python-Skript zur Auswertung: Ein Python-Skript analysiert die gespeicherten Daten und berechnet relevante Metriken wie RMSE, Orientation Error, Position Error.
+      - Bokeh für Visualisierung: Die Ergebnisse der Auswertungen werden mit Hilfe von Bokeh visualisiert, um die Unterschiede zwischen den Algorithmen und den verschiedenen Szenarien anschaulich darzustellen.
+
+    - Diese strukturierte Vorgehensweise gewährleistet eine umfassende und nachvollziehbare Bewertung der Performance von GICP und ICP in unterschiedlichen Testumgebungen. Desweiteren erlaubt es wiederholbare Experimente und eine einfache Vergleichbarkeit der Ergebnisse. Es wird jeweils nur ein Parameter verändert, um die Auswirkungen auf die Ergebnisse zu analysieren.
+    ]
 ]
 
 
@@ -684,6 +704,15 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   this->declare_parameter("transformation_epsilon", 0.0);
   this->declare_parameter("euclidean_fitness_epsilon", 0.0);
   ```
+
+  #comment[
+    -max correspondence distance: maximale distanz mit der ein punkt aus der source wolke mit einem punkt aus der target wolke korrespondieren kann
+    -maximum iterations: maximale anzahl an iterationen die der algorithmus
+    -transformation epsilon:die maximal zulässige quadratische Differenz zwischen zwei aufeinanderfolgenden Transformationen
+    -euclidean fitness epsilon: Der maximal zulässige euklidische Fehler zwischen zwei aufeinanderfolgenden Schritten in der ICP-Schleife
+    fehler = durschnitt aller Unterschiede zwischen den korrespondierenden Punkten
+   
+  ]
 ]
 
 #slide[
@@ -746,6 +775,13 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   pcl::PointCloud<pcl::PointXYZ>::Ptr output(new pcl::PointCloud<pcl::PointXYZ>);
   gicp.align(*output);
   ```
+
+  #comment[
+    - ICP und GICP sind beide in der PCL-Bibliothek implementiert
+    - beide benötigen als Input die Source- und Target-Punktwolke
+    - align-Funktion berechnet die Transformation
+    - icp.align(output): Führt den ICP-Algorithmus aus, um die beste Übereinstimmung zwischen der Quell- und Zielpunktwolke zu finden und speichert das Ergebnis in der Ausgabepunktwolke
+  ]
 ]
 
 
@@ -764,12 +800,22 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   time_msg.data = elapsed.count();
   time_publisher_->publish(time_msg);
   ```
+
+  #comment[
+    - Zeitmessung wird mit der C++-Chrono-Bibliothek durchgeführt
+    - start und finish markieren den Anfang und das Ende der Zeitmessung
+    - elapsed berechnet die Dauer der Zeitmessung
+    - time_msg wird erstellt und die Zeit wird in die Nachricht geschrieben
+    - time_publisher veröffentlicht die Nachricht auf dem entsprechenden Topic
+    - überprüfung ob GICP auch wirklich aufwendiger in der Berechnung
+    - wie ändern Parameter die Zeit
+  ]
 ]
 
 
 #slide[
   = Implementierung in ROS - Versuch
-  == Problem
+  == Problem: Aufsummierende Fehler
 
   ```cpp
   // reduce tick speed in topic_callback
@@ -797,8 +843,15 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   )
     ],
   )
-  // - schlechte Ergebnisse wenn jeder Tick berücksichtigt wird
-  // - deutlich bessere Ergebnisse wenn nur jeder dritte Tick berücksichtigt wird
+
+  #comment[
+    - Problem: Aufsummierende Fehler
+    - schlechte Ergebnisse wenn jeder Tick berücksichtigt wird
+    - weniger Aufrufe der (G)ICP Algorithmen
+    - weniger Datenpunkte
+    - deutlich bessere Ergebnisse wenn nur jeder dritte Tick berücksichtigt wird
+    - rechenleistung wird gespart
+  ]
 ]
 
 
@@ -920,6 +973,10 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
 
 #slide[
   = Fazit
+
+  - Leitfrage: Ist Generalized-ICP besser als Standard-ICP und wie verhält sich der Algorithmus in unterschiedlichen Szenarien?
+
+  #v(1cm)
 
   - keine deutlich besseren Ergebnisse bei GICP
   - Parameter-Wahl nicht so kritisch wie bei ICP kann bestätigt werden
