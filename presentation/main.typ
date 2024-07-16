@@ -515,7 +515,16 @@
   )
 
   #comment[
-    - 
+    - insgesammt GICP robuster und genauer bei simulierten und realen Daten
+    - dabei immer noch relativ schnell und einfach
+      - auch wenn mehr Rechenaufwand durch Kovarianzmatrizen
+    - Nutzen von Oberflächenstruktur minimiert Einfluss von falschen Korrespondenzen, was bei Standard-ICP ein Problem war
+    - dadurch auch Parameter-Wahl für $d_(max)$ nicht mehr so kritisch
+      - leichter einsetzbar in unterschiedlichen Szenarien
+    - in Bild unten
+      - Durchschnittsfehler als Funktion von $d_(max)$
+      - Generalized-ICP ganz unten, hat am die niedrigsten Fehler
+
   ]
 ]
 
