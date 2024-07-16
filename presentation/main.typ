@@ -67,7 +67,8 @@
     + Generalized-ICP
     + Ergebnisse von #cite(<segal-gicp>, form: "author")
   + Demo: Eigene Implementierung in Python
-  + Implementierung in ROS
+  + Implementierung in ROS - Versuch
+    + Versuchsaufbau
     + Parameterisierung
     + Problem
     + Implementierung
@@ -506,7 +507,8 @@
 ]
 
 #slide[
-  = Versuchsaufbau
+  = Implementierung in ROS - Versuch
+  == Versuchsaufbau
 
   - Bag File
   - Skript für Nodes
@@ -527,7 +529,8 @@
 
 
 #slide[
-  = Parameterisierung
+  = Implementierung in ROS - Versuch
+  == Parameterisierung
 
   ```cpp
   //name des odom topics
@@ -550,7 +553,9 @@
 ]
 
 #slide[
-  = Parameterisierung über YAML file
+  = Implementierung in ROS - Versuch
+  == Parameterisierung über YAML file
+
   #text(size: 15pt)[
     #columns(2, gutter: 0pt)[
       ```YAML
@@ -586,7 +591,8 @@
 
 
 #slide[
-  = Implementierung in Ros
+  = Implementierung in ROS - Versuch
+  == Implementierung ICP & GICP
 
   - ICP:
   ```cpp
@@ -609,7 +615,9 @@
 ]
 
 #slide[
-  = Implementierung in Ros - Problem
+  = Implementierung in ROS
+  == Problem
+
   ```cpp
   // reduce tick speed in topic_callback
   tick++;
@@ -623,7 +631,7 @@
       #figure(
         caption: "Trajectory plot with higher tick speed",
         [
-          #image("./assets/trajectory_plot_corr_dist_old.png", width: 80%)
+          #image("./assets/trajectory_plot_corr_dist_old.png", width: 74%)
         ],
       )
     ],
@@ -631,7 +639,7 @@
       #figure(
     caption: "Trajectory plot with lower tick speed",
     [
-      #image("./assets/trajectory_plot_variance_round_1.png", width: 80%)
+      #image("./assets/trajectory_plot_variance_round_1.png", width: 74%)
     ] // TODO: hier vielleicht neues bild auch mit corr dist
   )
     ],
@@ -641,7 +649,8 @@
 ]
 
 #slide[
-  = Implementierung in Ros
+  = Implementierung in ROS - Versuch
+  == Zeitmessung
 
   ```cpp
   auto start = std::chrono::high_resolution_clock::now();
@@ -658,34 +667,37 @@
 
 
 #slide[
-  = Turtlebot3 World
+  = Implementierung in ROS - Versuch
+  == Turtlebot3 World
 
   #figure(
     caption: "Screenshot Gazebo",
     [
-      #image("./assets/turtlebot3_world.jpg", width: 90%)
+      #image("./assets/turtlebot3_world.jpg", width: 80%)
     ],
   )
 ]
 
 #slide[
-  = Turtlebot3 ICP World
+  = Implementierung in ROS - Versuch
+  == Turtlebot3 ICP World
 
   #figure(
     caption: "Screenshot Gazebo",
     [
-      #image("./assets/turtlebot3_icp_world.jpg", width: 90%)
+      #image("./assets/turtlebot3_icp_world.jpg", width: 80%)
     ],
   )
 ]
 
 #slide[
-  = Turtlebot3 World
+  = Implementierung in ROS - Versuch
+  == Turtlebot3 World
 
   #figure(
     caption: "Screenshot Gazebo",
     [
-      #image("./assets/turtlebot3_dqn_stage1.jpg", width: 90%)
+      #image("./assets/turtlebot3_dqn_stage1.jpg", width: 80%)
     ],
   )
 ]
