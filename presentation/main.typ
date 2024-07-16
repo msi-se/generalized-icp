@@ -246,7 +246,7 @@
     - Startwert für Transformation $T_0$
       - kann bereits eine sinnvolle Schätzung sein (z.b. Odometrie)
     - Loop bis der Algorithmus konvergiert (daher auch "Iterative")
-    - für jeden Punkt in der Quellwolke $b_i$ wird der nächste Punkt in der Zielwolke $A$ gesucht
+    - für jeden Punkt in der Sourcewolke $b_i$ wird der nächste Punkt in der Targetwolke $A$ gesucht
     - dann wird geschaut ob der Abstand kleiner als das Threshold $d_(max)$ ist
       - Parameter steuert also, welche Punkte berücksichtigt werden und welche nicht
       - ist je nach Anwendungsszenario unterschiedlich
@@ -288,7 +288,7 @@
         - wenn 2 mal eine Wand gescant
         - Punkte zwar durch die Abtastrate unterschiedlichen Stellen im Raum
         - kann sein, dass die Bewegung zur Wand nicht wirklich groß war
-    - um dies entgegenzuwirken, vergleicht Point-to-Plane-ICP Punkte in einer Wolke zu Ebenen in der anderen
+    - um dem entgegenzuwirken, vergleicht Point-to-Plane-ICP Punkte in einer Wolke zu Ebenen in der anderen
     - Ebenen wird durch Punkt und Normalenvektor definiert
     - Optimierungsfunktion in der letzten Zeile des Algorithmus:
       - minimiert quadratische Abstände zwischen Punkt und Ebene
@@ -513,6 +513,10 @@
       #image("./assets/paper-results.png", width: 60%)
     ],
   )
+
+  #comment[
+    - 
+  ]
 ]
 
 #slide[
