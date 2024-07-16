@@ -816,6 +816,18 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
 
 #slide[
   = Implementierung in ROS - Versuch
+  == Turtlebot3 World
+
+  #figure(
+    caption: "Screenshot Gazebo",
+    [
+      #image("./assets/turtlebot3_dqn_stage1.jpg", width: 80%)
+    ],
+  )
+]
+
+#slide[
+  = Implementierung in ROS - Versuch
   == Turtlebot3 ICP World
 
   #figure(
@@ -826,17 +838,7 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   )
 ]
 
-#slide[
-  = Implementierung in ROS - Versuch
-  == Turtlebot3 World
 
-  #figure(
-    caption: "Screenshot Gazebo",
-    [
-      #image("./assets/turtlebot3_dqn_stage1.jpg", width: 80%)
-    ],
-  )
-]
 
 
 #slide[
