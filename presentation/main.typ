@@ -554,6 +554,26 @@
   #v(1cm)
 
   #emph[$->$ CODE OVERVIEW]
+
+  
+  #comment[
+    *Version 1*
+    - Visualisierung mit generierten Input-Wolken
+    - Source und Target Punktwolke
+      - Quadrat und Kreis als Punktwolken
+      - Beide Punktwolken haben unterschiedliches Rauschen
+      - Unterschiedlich viele Punkte
+      - Keine Sortierung
+    - Covarianzmatrizzen werden dargestellt
+    - Bissle duchsteppen
+
+    *Version 2*
+    - Bissle mitm Roboter rumfahren
+    - Einmal um Kreis
+    => schlechte Rotation estimation
+    - Einmal an gerader Wand entlang
+    => schlechte Translation estimation
+  ]
 ]
 
 #slide[
