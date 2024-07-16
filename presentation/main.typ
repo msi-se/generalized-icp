@@ -26,6 +26,19 @@
 }
 
 #title-slide[
+  #place(
+      dx: 8.5cm,
+      dy: 14.5cm,
+    )[
+      #rotate(0deg)[
+        #image(
+          "./assets/HTWG_IN_Markenzeichen_klein_pos_2C.png",
+          width: 30%,
+          fit: "cover",
+        )
+      ]
+    ]
+
   = Generalized Iterative Closest Point
   Mündliche Prüfung in der Vorlesung Autonome Roboter
 
@@ -33,10 +46,11 @@
 
   #datetime.today().display("[day].[month].[year]")
 
-  // space
   #v(5cm)
 
   Johannes Brandenburger, Moritz Kaltenstadler, Fabian Klimpel
+
+  
 ]
 
 #slide[
@@ -54,13 +68,45 @@
   + Fazit
 ]
 
-#slide[
-  = Theorie
+#comment[
+  Test
+]
 
-  - Einzige wirkliche Quelle: "Generalized-ICP" von Segal, Haehnel & Thrun (2010)
-    - Ziel: Iterative-Closest-Point-Algorithmus (ICP) verbessern
+#slide[
+  #set page(background: [
+    #place(
+      dx: 6cm,
+      dy: 13cm,
+    )[
+      #rotate(20deg)[
+        #box(
+          fill: rgb("#f3f3f3"),
+        )[
+          #image(
+            "./assets/paper-cover.png",
+            width: 50%,
+            fit: "cover",
+          )
+        ]
+      ]
+    ]
+  ])
+
+  = Einführung
+
+  - ICP: *Iterative Closest Point*
+    - Scan-Matching-Algorithmus
+    - Schätzung der Transformation zwischen zwei Punktwolken
+    - Anwendung in der Lokalisierung mit z.B. LiDAR-Sensoren
+
+  #v(0.5cm)
+
+  - GICP: *Generalized-ICP*
+    - veröffentlicht von Segal, Haehnel & Thrun (2009)
+    - Stanford University
+    - Ziel: ICP-Algorithmus verbessern und verallgemeinern
     - Standard-ICP & point-to-plane in *generelles Framework* überführen
-    - *Probabilistische* Betrachtung
+    - *probabilistische* Betrachtung
     - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) → *plane-to-plane*
 ]
 
@@ -128,7 +174,7 @@
 
     #v(1cm)
     $T arrow.l arg min_T {sum_i ((T dot.op b_i - m_i) * bold(n_i))^2}$
-    
+
     #colbreak()
     #figure(
       caption: [Point-to-Plane-ICP @point-to-plane-icp],
@@ -412,7 +458,7 @@
   - jeweils Bild reinmachen
   - roboter war immer der gleiche
 
-  
+
 ]
 
 #slide[
@@ -430,7 +476,8 @@
     caption: "Screenshot Gazebo",
     [
       #image("./assets/turtlebot3_world.jpg", width: 90%)
-    ])
+    ],
+  )
 ]
 
 #slide[
@@ -440,7 +487,8 @@
     caption: "Screenshot Gazebo",
     [
       #image("./assets/turtlebot3_icp_world.jpg", width: 90%)
-    ])
+    ],
+  )
 ]
 
 #slide[
@@ -450,7 +498,8 @@
     caption: "Screenshot Gazebo",
     [
       #image("./assets/turtlebot3_dqn_stage1.jpg", width: 90%)
-    ])
+    ],
+  )
 ]
 
 
