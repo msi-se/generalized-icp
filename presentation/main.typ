@@ -757,11 +757,6 @@
   )
 ]
 
-#slide[
-  = Auswertung
-
-  - Link zu Bokeh Files
-]
 
 #slide[
   = Auswertung
@@ -812,7 +807,7 @@
 
 #slide[
   = Fazit
-  
+
   - keine deutlich besseren Ergebnisse bei GICP
   - Parameter-Wahl nicht so kritisch wie bei ICP kann bestätigt werden
   - keine marginalen Unterschiede zwischen ICP & GICP in den unterschiedlichen Maps
