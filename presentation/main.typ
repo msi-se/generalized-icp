@@ -30,17 +30,17 @@
 
 #title-slide[
   #place(
-      dx: 8.5cm,
-      dy: 14.5cm,
-    )[
-      #rotate(0deg)[
-        #image(
-          "./assets/HTWG_IN_Markenzeichen_klein_pos_2C.png",
-          width: 30%,
-          fit: "cover",
-        )
-      ]
+    dx: 8.5cm,
+    dy: 14.5cm,
+  )[
+    #rotate(0deg)[
+      #image(
+        "./assets/HTWG_IN_Markenzeichen_klein_pos_2C.png",
+        width: 30%,
+        fit: "cover",
+      )
     ]
+  ]
 
   = Generalized Iterative Closest Point
   Mündliche Prüfung in der Vorlesung Autonome Roboter
@@ -53,7 +53,7 @@
 
   Johannes Brandenburger, Moritz Kaltenstadler, Fabian Klimpel
 
-  
+
 ]
 
 #slide[
@@ -274,9 +274,9 @@
       - *Point-to-Point*
         - Standard-ICP
         - vergleicht Punkt mit Punkt
-      
+
       #v(0.2cm)
-      
+
       - *Point-to-Plane*
         - vergleicht Punkt mit Ebene durch Normalenvektor
 
@@ -322,10 +322,7 @@
     - welche Ergebnisse dies hat, dazu später mehr
 ]
 
-#slide[
-
-  = Theorie - GICP-Algorithmus
-
+#let gicp-algo = [
   #pseudocode-list[
     + $T arrow.l T_0$
     + *while* not converged *do*
@@ -346,6 +343,13 @@
   ]
 ]
 
+#slide[
+
+  = Theorie - GICP-Algorithmus
+
+  #gicp-algo
+]
+
 #comment[
   - im Paper wurde Algorithmus nie zusammenhängend dargestellt
     - deshalb hier nochmals selber zusammengebaut
@@ -359,8 +363,41 @@
     - wählt Transformationsmatrix T so dass die Verteilung am wahrscheinlichsten ist
 ]
 
-
 #slide[
+
+  #place(
+    dx: 14.2cm,
+    dy: 1.8cm,
+  )[
+    #box(
+      width: 5.3cm,
+      height: 0.9cm,
+      fill: rgb("#5a3bf538"),
+      radius: 0.1cm,
+    )
+  ]
+  
+  #place(
+    dx: -0.2cm,
+    dy: 2.6cm,
+  )[
+    #box(
+      width: 10cm,
+      height: 1.8cm,
+      fill: rgb("#5a3bf538"),
+      radius: 0.1cm,
+    )
+  ]
+
+  #place(
+    dx: 13cm,
+    dy: -1cm,
+  )[
+    #rotate(0deg)[
+      #set text(size: 8.5pt)
+      #gicp-algo
+    ]
+  ]
 
   = Theorie - GICP-Algorithmus
   == Variationen für Kovarianzmatrizen
@@ -395,8 +432,11 @@
         #image("./assets/plane-to-plane.png", width: 100%)
       ],
     )
-
   ]
+]
+
+#comment[
+  - Wahl der Kovarianzmatrizen sind also entscheidend für den GICP-Algorithmus
 ]
 
 #slide[
