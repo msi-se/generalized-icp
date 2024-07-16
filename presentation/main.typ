@@ -545,6 +545,17 @@
 
 #slide[
   = Implementierung in ROS - Versuch
+  == Leitfrage
+
+  #v(4cm)
+  #set align(center)
+  #text(size: 30pt)[
+    Ist Generalized-ICP besser als Standard-ICP und wie verhält sich der Algorithmus in unterschiedlichen Szenarien?
+  ]
+]
+
+#slide[
+  = Implementierung in ROS - Versuch
   == Versuchsaufbau
 
   - Vorbedingungen:
@@ -553,10 +564,10 @@
     - Yaml files als configuration
 
   #v(1cm)
-  - Durchführung:
-    - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-    - drei unterschiedliche Maps
-    - unterschiedliche Parameterisierung
+  - Szenarien:
+    - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
+    - Unterschiedliche Parameterisierung
+    - Drei unterschiedliche Maps
   
   #v(1cm)
   - Auswertung:
@@ -652,8 +663,27 @@
   ```
 ]
 
+
 #slide[
-  = Implementierung in ROS
+  = Implementierung in ROS - Versuch
+  == Zeitmessung
+
+  ```cpp
+  auto start = std::chrono::high_resolution_clock::now();
+  icp.align(*output);
+  transformation = icp.getFinalTransformation();
+  auto finish = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double> elapsed = finish - start;
+  std_msgs::msg::Float64 time_msg;
+  time_msg.data = elapsed.count();
+  time_publisher_->publish(time_msg);
+  ```
+]
+
+
+#slide[
+  = Implementierung in ROS - Versuch
   == Problem
 
   ```cpp
@@ -684,23 +714,6 @@
   )
   // - schlechte Ergebnisse wenn jeder Tick berücksichtigt wird
   // - deutlich bessere Ergebnisse wenn nur jeder dritte Tick berücksichtigt wird
-]
-
-#slide[
-  = Implementierung in ROS - Versuch
-  == Zeitmessung
-
-  ```cpp
-  auto start = std::chrono::high_resolution_clock::now();
-  icp.align(*output);
-  transformation = icp.getFinalTransformation();
-  auto finish = std::chrono::high_resolution_clock::now();
-
-  std::chrono::duration<double> elapsed = finish - start;
-  std_msgs::msg::Float64 time_msg;
-  time_msg.data = elapsed.count();
-  time_publisher_->publish(time_msg);
-  ```
 ]
 
 
@@ -744,6 +757,22 @@
   = Auswertung
 
   - Link zu Bokeh Files
+]
+
+#slide[
+  = Auswertung
+  == Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
+]
+
+
+#slide[
+  = Auswertung
+  == Unterschiedliche Parameterisierung
+]
+
+#slide[
+  = Auswertung 
+  == Drei unterschiedliche Maps
 ]
 
 #slide[
