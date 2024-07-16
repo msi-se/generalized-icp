@@ -515,21 +515,22 @@
   = Implementierung in ROS - Versuch
   == Versuchsaufbau
 
-  - Bag File
-  - Skript für Nodes
-  - Yaml files als configuration
+  - Vorbedingungen:
+    - Bag File
+    - Skript für Nodes
+    - Yaml files als configuration
 
   #v(1cm)
-
-  - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-  - drei unterschiedliche Maps
-  - unterschiedliche Parameterisierung
+  - Durchführung:
+    - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
+    - drei unterschiedliche Maps
+    - unterschiedliche Parameterisierung
   
   #v(1cm)
-
-  - Bag Files mit Topics
-  - Python-Skript zur Auswertung
-  - Bokeh für Visualisierung
+  - Auswertung:
+    - Bag Files mit Topics
+    - Python-Skript zur Auswertung
+    - Bokeh für Visualisierung
 ]
 
 
