@@ -78,14 +78,14 @@
   #set page(background: [
     #place(
       dx: 6cm,
-      dy: 13cm,
+      dy: 12cm,
     )[
       #rotate(20deg)[
         #box(
           fill: rgb("#f3f3f3"),
         )[
           #image(
-            "./assets/paper-cover.png",
+            "./assets/paper-cover.svg",
             width: 50%,
             fit: "cover",
           )
@@ -112,6 +112,32 @@
     - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) → *plane-to-plane*
 ]
 
+#comment[
+  - ICP Verfahren schon in Vorlesung
+  - grober Überblick
+  - ICP steht für Iterative Closest Point
+  - Scan-Matching-Algorithmus
+  - Schätzung der Transformation zwischen zwei Punktwolken
+  - Anwendung in der Lokalisierung mit z.B. LiDAR-Sensoren
+
+  - wurde 2009 von Segal, Haehnel & Thrun verbessert
+  - an Stanford University Verfahren entwickelt
+  - Generalized-ICP
+  - Ziel: ICP-Algorithmus verbessern und verallgemeinern
+    - Probleme Standard-ICP:
+      - nicht sehr robust
+      - sehr empfindlich gegenüber der Parameterwahl
+      - daher schlecht in mehreren Szenarien einsetzbar
+    - Standard-ICP & point-to-plane in generelles Framework überführen
+    - 2 große Änderungen:
+      - Wahrscheinlichkeitstheorie
+      - Nutzung planarer Strukturen
+        - Punktwolke sind nicht random im Raum verteilt
+        - haben Struktur zb von Wänden
+        - GICP nutzt diese Struktur in Form von Kovarianzmatrizen
+          - Überleitung Kovarianzmatrizen -> Mathematische Grundlagen
+]
+
 #slide[
   = Theorie - Mathematische Grundlagen
 
@@ -125,9 +151,11 @@
   === Maximum Likelihood Estimation (MLE)
 
   - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
-  - der Paramter wird ausgewählt, der die beobachteten Daten am wahrscheinlichsten macht
+  - der Parameter wird ausgewählt, der die beobachteten Daten am wahrscheinlichsten macht
   - oft verwendet um: $arg max_p ...$ / $arg min_p ...$ zu finden
 ]
+
+
 
 
 #slide[
