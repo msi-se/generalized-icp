@@ -557,6 +557,75 @@
 ]
 
 #slide[
+  = Demo: Eigene Implementierung in Python
+  == Code Overview - GICP
+
+  #v(1cm)
+  GICP-Funktion:
+  #v(1cm)
+
+  ```python
+def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6,
+    max_distance_correspondence=150, max_distance_nearest_neighbors=50):
+    for iteration in range(max_iterations):
+        # Calculate covariance covariance matrices for weight matrices
+        # Will be used in loss function
+        ...
+
+        # Minimize the loss function function
+        transformation = fmin_cg(f=loss, x0=transformation, fprime=grad_loss)
+
+        # Check for convergence
+        if delta_loss < tolerance:
+            break
+
+    return transformation
+  ```
+]
+
+#slide[
+  = Demo: Eigene Implementierung in Python
+  == Code Overview - Roboter
+
+  #v(1cm)
+  GICP-Aufruf:
+  #v(1cm)
+  ```python
+transformation_matrix = gicp(
+            _source_points,
+            _target_points,
+            max_distance_nearest_neighbors=200,
+            tolerance=1,
+        )
+  ```
+]
+
+#slide[
+  = Demo: Eigene Implementierung in Python
+  == Code Overview - Roboter
+
+  #v(1cm)
+  Berechnung der neuen Schätzung:
+  #v(1cm)
+
+  ```python
+delta_x = -transformation_matrix[0, 2]
+delta_y = -transformation_matrix[1, 2]
+delta_yaw = -np.arctan2(transformation_matrix[1, 0], transformation_matrix[0, 0])
+
+new_estimated_x = last_estimated_x
+    + delta_x * math.cos(last_estimated_yaw)
+    - delta_y * math.sin(last_estimated_yaw)
+
+new_estimated_y = last_estimated_y
+    + delta_x * math.sin(last_estimated_yaw)
+    + delta_y * math.cos(last_estimated_yaw)
+
+new_estimated_yaw = last_estimated_yaw + delta_yaw
+  ```
+]
+
+#slide[
   = Implementierung in ROS - Versuch
   == Leitfrage
 

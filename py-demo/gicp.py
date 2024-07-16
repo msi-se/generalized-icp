@@ -64,7 +64,7 @@ def grad_loss(offset, source_points, target_points, weight_matrices):
     
     return gradient
 
-def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, epsilon=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
+def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_distance_correspondence=150, max_distance_nearest_neighbors=50):
     """
     + $T arrow.l T_0$
     + *while* not converged *do*
