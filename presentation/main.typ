@@ -73,9 +73,8 @@
     + Implementierung ICP & GICP
     + Problem
     + Zeitmessung
-    + Turtlebot3 World
-    + Turtlebot3 ICP World
-    + Turtlebot3 World
+    + Maps
+  + Fazit
   + (Bild-)Quellen
 ]
 
@@ -706,6 +705,10 @@
       #image("./assets/turtlebot3_dqn_stage1.jpg", width: 80%)
     ],
   )
+]
+
+#slide[
+  = Fazit
 ]
 
 
