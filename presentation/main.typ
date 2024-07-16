@@ -690,7 +690,7 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
     - Szenarien:
       - Drei unterschiedliche Maps: Die Experimente werden auf drei verschiedenen Karten durchgeführt, um die Robustheit der Algorithmen in unterschiedlichen Umgebungen zu überprüfen.
       - Unterschiedliche Parameterisierung: Es werden verschiedene Parametereinstellungen getestet, um die Auswirkungen auf die Genauigkeit und Laufzeit der Algorithmen zu analysieren.
-      - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Jedes Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
+      - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Gleiches Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
 
     - Auswertung
       - Bag Files mit Topics: Die während der Experimente generierten Daten werden in ROS-Bag-Dateien gespeichert, die verschiedene Topics enthalten, die für die Auswertung relevant sind.
