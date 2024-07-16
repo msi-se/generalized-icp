@@ -244,6 +244,16 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                # listen on the arrow keys to navigate through the steps (only one per click)
+                if event.key == pygame.K_LEFT:
+                    step = (step - 1) % len(all_transformations)
+                if event.key == pygame.K_RIGHT:
+                    step = (step + 1) % len(all_transformations)
+                if event.key == pygame.K_e:
+                    show_ellipses = not show_ellipses
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
         screen.fill((0, 0, 0))
         transformed_source = apply_transformation(source_cloud, all_transformations[step])
@@ -271,17 +281,7 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         # clock.tick(1)  # Slow down for visualization
         # step = (step + 1) % len(all_transformations)
 
-        # listen on the arrow keys to navigate through the steps (only one per click)
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            step = (step - 1) % len(all_transformations)
-            pygame.time.wait(100)
-        if keys[pygame.K_RIGHT]:
-            step = (step + 1) % len(all_transformations)
-            pygame.time.wait(100)
-        if keys[pygame.K_e]:
-            show_ellipses = not show_ellipses
-            pygame.time.wait(100)
+
         
 
         # Draw ellipses
