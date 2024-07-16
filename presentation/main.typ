@@ -293,7 +293,7 @@
     - Optimierungsfunktion in der letzten Zeile des Algorithmus:
       - minimiert quadratische Abstände zwischen Punkt und Ebene
   ]
-
+  
 ]
 
 

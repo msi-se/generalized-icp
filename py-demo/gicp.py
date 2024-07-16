@@ -5,6 +5,19 @@ import pygame
 from pygame.locals import QUIT
 from scipy.optimize import fmin_cg
 
+def compute_covariance_matrix_single_point(point, neighbors):
+    # In our implementation we compute these transformations by considering
+    # the eigen decomposition of the empirical covariance of the 20 closest points,
+    # Σ = UDUT . We then use U in place of the rotation matrix (in effect
+    # replacing D with diag(ǫ, 1, 1) to get the ﬁnal surface-aligned matrix).
+
+    epsilon = 100
+    covariance_ground = np.array([[epsilon, 0], [0, epsilon*0.1]])
+    covariance = np.cov(neighbors, rowvar=False)
+    U, D, V = np.linalg.svd(covariance)
+    covariance_aligned = U @ covariance_ground @ U.T
+    return covariance_aligned
+
 def compute_covariance_matrix(points, max_distance=30):
     """Find the k nearest neighbors of each point in the cloud and compute the covariance matrices with them."""
     tree = KDTree(points)
@@ -16,7 +29,7 @@ def compute_covariance_matrix(points, max_distance=30):
         if len(indices) > 1:
             neighbors = points[indices]
             try:
-                cov_matrices[i] = np.cov(neighbors.T)
+                cov_matrices[i] = compute_covariance_matrix_single_point(points[i], neighbors)
             except np.linalg.LinAlgError:
                 cov_matrices[i] = np.eye(2)
         else:
@@ -97,16 +110,21 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
     offset = np.zeros(3)  # [tx, ty, theta]
     last_min_loss = np.inf
     initial_source_cov_matrices = compute_covariance_matrix(source_points, max_distance_nearest_neighbors)
+    highest_cov_points_source = []
+    highest_cov_points_target = []
+    all_source_cov_matrices = []
 
     for iteration in range(max_iterations):
 
         # Apply the current transformation to the source points
         transformed_source_points = apply_transformation(source_points, transformation_matrix)
         source_cov_matrices = compute_covariance_matrix(transformed_source_points, max_distance_nearest_neighbors)
+        all_source_cov_matrices.append(source_cov_matrices)
         
         # Compute the corresponding target points and weight matrices
         corresponding_target_points = np.zeros_like(source_points)
         weight_matrices = np.zeros((len(source_points), 2, 2))
+        combined_cov_matrices = np.zeros((len(source_points), 2, 2))
         tree = KDTree(target_points)
         distances = np.zeros(len(source_points))
         for i, source_point in enumerate(transformed_source_points):
@@ -123,7 +141,9 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
             corresponding_target_points[i] = target_points[index]
 
             # Compute the weight matrix by combining the covariance matrices of the target and source points (target = A; source = B)
+            # normalize the covariance matrices
             combined_cov_matrix = source_cov_matrices[i] + target_cov_matrices[index]
+            combined_cov_matrices[i] = combined_cov_matrix
             weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
 
         # Minimize the loss function / cost function using maximum likelihood estimation
@@ -143,13 +163,17 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
             print("Converged at iteration", iteration)
             break
 
-
         # Update transformation matrix
         last_min_loss = min_loss
         transformation_matrix = offset_to_transformation_matrix(offset)
         all_transformations.append(transformation_matrix)
 
-    return transformation_matrix, all_transformations, initial_source_cov_matrices, target_cov_matrices
+        # only for visualization: store the 5 highest covariance matrices and their corresponding points
+        highest_cov_indices = np.argsort(np.linalg.det(weight_matrices))[-5:]
+        highest_cov_points_source.append(transformed_source_points[highest_cov_indices])
+        highest_cov_points_target.append(corresponding_target_points[highest_cov_indices])
+
+    return transformation_matrix, all_transformations, all_source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target
 
 def apply_transformation(cloud, T):
     return np.dot(cloud[:, :2], T[:2, :2].T) + T[:2, 2]
@@ -193,7 +217,7 @@ def transform_points(points, translation, angle):
 
 
 # Visualization with Pygame
-def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_matrices, target_cov_matrices):
+def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target):
     pygame.init()
     screen = pygame.display.set_mode((1000, 700), pygame.RESIZABLE)
     clock = pygame.time.Clock()
@@ -281,13 +305,19 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         # clock.tick(1)  # Slow down for visualization
         # step = (step + 1) % len(all_transformations)
 
-
-        
+        # mark the 5 highest covariance matrices with a circle around them
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
+        for i in range(5):
+            try:
+                pygame.draw.circle(screen, colors[i], highest_cov_points_source[step][i].astype(int), 10, 2)
+                pygame.draw.circle(screen, colors[i], highest_cov_points_target[step][i].astype(int), 10, 2)
+            except IndexError:
+                pass
 
         # Draw ellipses
         if show_ellipses:
-            for i, point in enumerate(source_points):
-                draw_ellipse(screen, yellow, point, source_cov_matrices[i])
+            for i, point in enumerate(transformed_source):
+                draw_ellipse(screen, yellow, point, source_cov_matrices[step][i])
         
             for i, point in enumerate(target_points):
                 draw_ellipse(screen, green, point, target_cov_matrices[i])
@@ -325,6 +355,6 @@ if __name__ == "__main__":
     np.random.shuffle(target_points)
     target_points = target_points[:len(target_points) - 3]
 
-    T, all_transformations, source_cov_matrices, target_cov_matrices = gicp(source_points, target_points)
+    T, all_transformations, source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target = gicp(source_points, target_points)
 
-    visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices)
+    visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target)
