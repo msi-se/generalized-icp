@@ -37,7 +37,7 @@
       dx: 0cm,
       dy: 0cm,
     )[
-      #box(fill: rgb("#ededed"), width: 100%, height:45%, inset: 0.2cm)[
+      #box(fill: rgb("#ededed"), width: 100%, height: 45%, inset: 0.2cm)[
         = Speaker Notes
         #set text(size: 13pt)
         #columns(2)[
@@ -293,7 +293,7 @@
     - Optimierungsfunktion in der letzten Zeile des Algorithmus:
       - minimiert quadratische Abstände zwischen Punkt und Ebene
   ]
-  
+
 ]
 
 
@@ -484,6 +484,7 @@
     - hier werden wirklich Kovarianzmatrizen ausgerechnet
       - 20 umliegende Punkte werden betrachtet
       - Verteilung mit Hauptkomponentenanalyse bestimmt
+      - wenn hier eine genauere, mathematische Erklärung gewünscht, später darauf eingehen
     - allerdings auch etwas mehr Rechenaufwand bei jeder Iteration
     - Berechnen Kovarianzmatrizen geschiet bei beiden Wolken -> Berücksichtigung beider Oberflächenstrukturen
 
@@ -555,7 +556,7 @@
 
   #emph[$->$ CODE OVERVIEW]
 
-  
+
   #comment[
     *Version 1*
     - Visualisierung mit generierten Input-Wolken
@@ -583,24 +584,24 @@
   GICP-Funktion:
 
   ```python
-def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6,
-    max_distance_correspondence=150, max_distance_nearest_neighbors=50):
-    for iteration in range(max_iterations):
-        # Calculate covariance covariance matrices for weight matrices
-        # Will be used in loss function
-        ...
+  def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6,
+      max_distance_correspondence=150, max_distance_nearest_neighbors=50):
+      for iteration in range(max_iterations):
+          # Calculate covariance covariance matrices for weight matrices
+          # Will be used in loss function
+          ...
 
-        # Minimize the loss function function
-        transformation = scipy.optimize.fmin_cg(
-            f=loss,
-            x0=transformation,
-            fprime=grad_loss)
+          # Minimize the loss function function
+          transformation = scipy.optimize.fmin_cg(
+              f=loss,
+              x0=transformation,
+              fprime=grad_loss)
 
-        # Check for convergence
-        if delta_loss < tolerance:
-            break
+          # Check for convergence
+          if delta_loss < tolerance:
+              break
 
-    return transformation
+      return transformation
   ```
 ]
 
@@ -612,12 +613,12 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6,
   GICP-Aufruf:
   #v(1cm)
   ```python
-transformation_matrix = gicp(
-            _source_points,
-            _target_points,
-            max_distance_nearest_neighbors=200,
-            tolerance=1,
-        )
+  transformation_matrix = gicp(
+              _source_points,
+              _target_points,
+              max_distance_nearest_neighbors=200,
+              tolerance=1,
+          )
   ```
 ]
 
@@ -630,21 +631,21 @@ transformation_matrix = gicp(
   #v(1cm)
 
   ```python
-# Get delta x, y and yaw from transformation matrix
-delta_x = -transformation_matrix[0, 2]
-delta_y = -transformation_matrix[1, 2]
-delta_yaw = -np.arctan2(transformation_matrix[1, 0], transformation_matrix[0, 0])
+  # Get delta x, y and yaw from transformation matrix
+  delta_x = -transformation_matrix[0, 2]
+  delta_y = -transformation_matrix[1, 2]
+  delta_yaw = -np.arctan2(transformation_matrix[1, 0], transformation_matrix[0, 0])
 
-# Calculate estimations for new position and orientation
-new_estimated_x = last_estimated_x
-    + delta_x * math.cos(last_estimated_yaw)
-    - delta_y * math.sin(last_estimated_yaw)
+  # Calculate estimations for new position and orientation
+  new_estimated_x = last_estimated_x
+      + delta_x * math.cos(last_estimated_yaw)
+      - delta_y * math.sin(last_estimated_yaw)
 
-new_estimated_y = last_estimated_y
-    + delta_x * math.sin(last_estimated_yaw)
-    + delta_y * math.cos(last_estimated_yaw)
+  new_estimated_y = last_estimated_y
+      + delta_x * math.sin(last_estimated_yaw)
+      + delta_y * math.cos(last_estimated_yaw)
 
-new_estimated_yaw = last_estimated_yaw + delta_yaw
+  new_estimated_yaw = last_estimated_yaw + delta_yaw
   ```
 ]
 
@@ -673,7 +674,7 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
     - Drei unterschiedliche Maps
     - Unterschiedliche Parameterisierung
     - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-  
+
   #v(1cm)
   - Auswertung:
     - Bag Files mit Topics
@@ -681,23 +682,23 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
     - Bokeh für Visualisierung
 
     #comment[
-    - Vorbedingungen:
+      - Vorbedingungen:
 
-      - Bag File: beispiel trajektorie wird in ROS-Bag-Datei gespeichert, die als Input für die Experimente dient und immmer den gleichen Datensatz zur Verfügung stellt
-      - Skript für Nodes: Skripte, die die notwendigen ROS-Nodes starten und konfigurieren.
-      - Yaml-Dateien als Konfiguration: Konfigurationsdateien im YAML-Format, die die Parameter und Einstellungen für die Experimente enthalten.
+        - Bag File: beispiel trajektorie wird in ROS-Bag-Datei gespeichert, die als Input für die Experimente dient und immmer den gleichen Datensatz zur Verfügung stellt
+        - Skript für Nodes: Skripte, die die notwendigen ROS-Nodes starten und konfigurieren.
+        - Yaml-Dateien als Konfiguration: Konfigurationsdateien im YAML-Format, die die Parameter und Einstellungen für die Experimente enthalten.
 
-    - Szenarien:
-      - Drei unterschiedliche Maps: Die Experimente werden auf drei verschiedenen Karten durchgeführt, um die Robustheit der Algorithmen in unterschiedlichen Umgebungen zu überprüfen.
-      - Unterschiedliche Parameterisierung: Es werden verschiedene Parametereinstellungen getestet, um die Auswirkungen auf die Genauigkeit und Laufzeit der Algorithmen zu analysieren.
-      - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Gleiches Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
+      - Szenarien:
+        - Drei unterschiedliche Maps: Die Experimente werden auf drei verschiedenen Karten durchgeführt, um die Robustheit der Algorithmen in unterschiedlichen Umgebungen zu überprüfen.
+        - Unterschiedliche Parameterisierung: Es werden verschiedene Parametereinstellungen getestet, um die Auswirkungen auf die Genauigkeit und Laufzeit der Algorithmen zu analysieren.
+        - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Gleiches Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
 
-    - Auswertung
-      - Bag Files mit Topics: Die während der Experimente generierten Daten werden in ROS-Bag-Dateien gespeichert, die verschiedene Topics enthalten, die für die Auswertung relevant sind.
-      - Python-Skript zur Auswertung: Ein Python-Skript analysiert die gespeicherten Daten und berechnet relevante Metriken wie RMSE, Orientation Error, Position Error.
-      - Bokeh für Visualisierung: Die Ergebnisse der Auswertungen werden mit Hilfe von Bokeh visualisiert, um die Unterschiede zwischen den Algorithmen und den verschiedenen Szenarien anschaulich darzustellen.
+      - Auswertung
+        - Bag Files mit Topics: Die während der Experimente generierten Daten werden in ROS-Bag-Dateien gespeichert, die verschiedene Topics enthalten, die für die Auswertung relevant sind.
+        - Python-Skript zur Auswertung: Ein Python-Skript analysiert die gespeicherten Daten und berechnet relevante Metriken wie RMSE, Orientation Error, Position Error.
+        - Bokeh für Visualisierung: Die Ergebnisse der Auswertungen werden mit Hilfe von Bokeh visualisiert, um die Unterschiede zwischen den Algorithmen und den verschiedenen Szenarien anschaulich darzustellen.
 
-    - Diese strukturierte Vorgehensweise gewährleistet eine umfassende und nachvollziehbare Bewertung der Performance von GICP und ICP in unterschiedlichen Testumgebungen. Desweiteren erlaubt es wiederholbare Experimente und eine einfache Vergleichbarkeit der Ergebnisse. Es wird jeweils nur ein Parameter verändert, um die Auswirkungen auf die Ergebnisse zu analysieren.
+      - Diese strukturierte Vorgehensweise gewährleistet eine umfassende und nachvollziehbare Bewertung der Performance von GICP und ICP in unterschiedlichen Testumgebungen. Desweiteren erlaubt es wiederholbare Experimente und eine einfache Vergleichbarkeit der Ergebnisse. Es wird jeweils nur ein Parameter verändert, um die Auswirkungen auf die Ergebnisse zu analysieren.
     ]
 ]
 
@@ -731,7 +732,7 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
     -transformation epsilon:die maximal zulässige quadratische Differenz zwischen zwei aufeinanderfolgenden Transformationen
     -euclidean fitness epsilon: Der maximal zulässige euklidische Fehler zwischen zwei aufeinanderfolgenden Schritten in der ICP-Schleife
     fehler = durschnitt aller Unterschiede zwischen den korrespondierenden Punkten
-   
+
   ]
 ]
 
@@ -889,7 +890,7 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   #comment[
     - Turtlebot3 World: Standard Gazebo-Welt für Turtlebot3
     - sechseck und 9 zylinder
-    - mittel komplexe Umgebung 
+    - mittel komplexe Umgebung
     - viele Datenpunkte
   ]
 ]
@@ -906,7 +907,7 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   )
 
   #comment[
-    - rechteck 
+    - rechteck
     - keine Hindernisse
     - einfachste Umgebung
     - wenig Datenpunkte
@@ -926,9 +927,9 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
 
   #comment[
     - icp welt von aufgabe 2
-    - unterschiedlichste objekte 
+    - unterschiedlichste objekte
     - keine begrenzung der umgebung
-    - komplexeste Umgebung 
+    - komplexeste Umgebung
     - mittel viele Datenpunkte
   ]
 ]
@@ -1037,4 +1038,56 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
     style: "apa",
     title: "",
   )
+]
+
+
+#slide[
+  = Anhang - Bestimmung der Kovarianzmatrizen bei Plane-to-Plane GICP
+
+  ```py
+  def compute_covariance_matrix_single_point(point, neighbors):
+    epsilon = 1e-6
+    covariance_ground = np.array([[epsilon, 0],
+                                  [0,       1]])
+    covariance = np.cov(neighbors, rowvar=False)
+    U, D, V = np.linalg.svd(covariance)               # Singular Value Decomposition
+    covariance_aligned = U @ covariance_ground @ U.T  # Align covariance matrix
+    return covariance_aligned
+  ```
+
+  #v(0.5cm)
+
+  #columns(2)[
+    *Single Value Decomposition*
+    - Zerlegung einer Matrix in drei Matrizen:
+      - Rotation #sym.arrow.r Skalierung #sym.arrow.r Rotation
+    - wird hier verwendet, um die Rotation der Kovarianzmatrix zu bestimmen
+      - Rotation sollte so sein, wie die Nachbarn liegen (Ebene)
+    - die Rotation wird dann auf die "Standard-Kovarianzmatrix" angewendet
+      - bildet so die Ebene ab
+
+    #colbreak()
+
+    #figure(
+      caption: "Singular Value Decomposition (Wikipedia)",
+      [
+        #image("./assets/svd.svg", width: 70%)
+      ],
+    )
+  ]
+
+  #comment[
+    - es wird Single Value Decomposition verwendet
+    - Zerlegung einer Matrix in drei Matrizen:
+      - Rotation #sym.arrow.r Skalierung #sym.arrow.r Rotation
+    - wird hier verwendet, um die Rotation der Kovarianzmatrix zu bestimmen
+      - Rotation sollte so sein, wie die Nachbarn liegen
+    - die Rotation wird dann auf die "Standard-Kovarianzmatrix" angewendet
+      - bildet so die Ebene ab
+
+    - in Paper wird in Fußnote erwähnt, dass sie bei ihrer Implementierung PCA (Hauptkomponentenanalyse) verwendet haben
+    - bei unserem eigene 2D-Skript hat das allerdings nicht so gut funktioniert wie die Alternative mit SVD
+
+  ]
+
 ]
