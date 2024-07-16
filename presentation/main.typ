@@ -58,14 +58,16 @@
 
   + Einführung
   + Theorie
+    + Mathematische Grundlagen
+    + Standard-ICP
+    + Point-to-Plane-ICP
+    + Generalized-ICP
+    + Ergebnisse von #cite(<segal-gicp>, form: "author")
   + Demo: Eigene Implementierung in Python
   + Implementierung in ROS
-  + Experiment
-    + Aufbau
-    + Durchführung
-    + Ergebnisse
-    + ...
-  + Fazit
+    + Parameterisierung
+    + Problem
+    + Implementierung
 ]
 
 #comment[
@@ -277,7 +279,7 @@
 
 #slide[
   = Theorie - GICP-Algorithmus
-  == Paper Ergebnisse @segal-gicp
+  == Ergebnisse von #cite(<segal-gicp>, form: "author")
 
   - GICP *genauer* bei simulierten und realen Daten
   - immer noch relativ schnell und einfach
@@ -428,7 +430,7 @@
     caption: "Trajectory plot with lower tick speed",
     [
       #image("./assets/trajectory_plot_variance_round_1.png", width: 80%)
-    ] // TODO hier vielleicht neues bild auch mit corr dist
+    ] // TODO: hier vielleicht neues bild auch mit corr dist
   )
     ],
   )
