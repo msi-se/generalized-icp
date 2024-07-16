@@ -812,6 +812,13 @@
 
 #slide[
   = Fazit
+  
+  - keine deutlich besseren Ergebnisse bei GICP
+  - Parameter-Wahl nicht so kritisch wie bei ICP kann bestätigt werden
+  - keine marginalen Unterschiede zwischen ICP & GICP in den unterschiedlichen Maps
+  - GICP ist aufwendiger in der Berechnung
+  - Abhängigkeit von der Simulationsumgebung
+  - Unterschiede zu Paper, da 3D-Scan und deutlich mehr Punkte
 ]
 
 
