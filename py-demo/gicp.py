@@ -6,10 +6,10 @@ from pygame.locals import QUIT
 from scipy.optimize import fmin_cg
 
 def compute_covariance_matrix_single_point(point, neighbors):
-    # In our implementation we compute these transformations by considering
+    # "In our implementation we compute these transformations by considering
     # the eigen decomposition of the empirical covariance of the 20 closest points,
     # Σ = UDUT . We then use U in place of the rotation matrix (in effect
-    # replacing D with diag(ǫ, 1, 1) to get the ﬁnal surface-aligned matrix).
+    # replacing D with diag(ǫ, 1, 1) to get the ﬁnal surface-aligned matrix)." (GICP from Segal et al.)
 
     epsilon = 100
     covariance_ground = np.array([[epsilon, 0], [0, epsilon*0.1]])
@@ -95,6 +95,7 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
             sum_i d_i^(T)^T (C_i^B + T C_i^A T^T)^(-1) d_i^((T))
           }$  // Maximum Likelihood Estimation
     + *end*
+    GICP algorithm from Segal et al. (2009)
     """
 
     # Convert points to numpy arrays if they are not already
@@ -110,8 +111,8 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
     offset = np.zeros(3)  # [tx, ty, theta]
     last_min_loss = np.inf
     initial_source_cov_matrices = compute_covariance_matrix(source_points, max_distance_nearest_neighbors)
-    highest_cov_points_source = []
-    highest_cov_points_target = []
+    highest_weight_points_source = []
+    highest_weight_points_target = []
     all_source_cov_matrices = []
 
     for iteration in range(max_iterations):
@@ -141,7 +142,6 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
             corresponding_target_points[i] = target_points[index]
 
             # Compute the weight matrix by combining the covariance matrices of the target and source points (target = A; source = B)
-            # normalize the covariance matrices
             combined_cov_matrix = source_cov_matrices[i] + target_cov_matrices[index]
             combined_cov_matrices[i] = combined_cov_matrix
             weight_matrices[i] = np.linalg.inv(combined_cov_matrix)
@@ -168,12 +168,12 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
         transformation_matrix = offset_to_transformation_matrix(offset)
         all_transformations.append(transformation_matrix)
 
-        # only for visualization: store the 5 highest covariance matrices and their corresponding points
-        highest_cov_indices = np.argsort(np.linalg.det(weight_matrices))[-5:]
-        highest_cov_points_source.append(transformed_source_points[highest_cov_indices])
-        highest_cov_points_target.append(corresponding_target_points[highest_cov_indices])
+        # only for visualization: store the 5 highest weight matrices and their corresponding points
+        highest_weight_indices = np.argsort(np.linalg.det(weight_matrices))[-5:]
+        highest_weight_points_source.append(transformed_source_points[highest_weight_indices])
+        highest_weight_points_target.append(corresponding_target_points[highest_weight_indices])
 
-    return transformation_matrix, all_transformations, all_source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target
+    return transformation_matrix, all_transformations, all_source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target
 
 def apply_transformation(cloud, T):
     return np.dot(cloud[:, :2], T[:2, :2].T) + T[:2, 2]
@@ -217,7 +217,7 @@ def transform_points(points, translation, angle):
 
 
 # Visualization with Pygame
-def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target):
+def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target):
     pygame.init()
     screen = pygame.display.set_mode((1000, 700), pygame.RESIZABLE)
     clock = pygame.time.Clock()
@@ -308,13 +308,13 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         # clock.tick(1)  # Slow down for visualization
         # step = (step + 1) % len(all_transformations)
 
-        # mark the 5 highest covariance matrices with a circle around them
+        # mark the 5 highest weight matrices with a circle around them
         if show_highest_cov:
             colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
             for i in range(5):
                 try:
-                    pygame.draw.circle(screen, colors[i], highest_cov_points_source[step][i].astype(int), 10, 2)
-                    pygame.draw.circle(screen, colors[i], highest_cov_points_target[step][i].astype(int), 10, 2)
+                    pygame.draw.circle(screen, colors[i], highest_weight_points_source[step][i].astype(int), 10, 2)
+                    pygame.draw.circle(screen, colors[i], highest_weight_points_target[step][i].astype(int), 10, 2)
                 except IndexError:
                     pass
 
@@ -359,6 +359,6 @@ if __name__ == "__main__":
     np.random.shuffle(target_points)
     target_points = target_points[:len(target_points) - 3]
 
-    T, all_transformations, source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target = gicp(source_points, target_points)
+    T, all_transformations, source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target = gicp(source_points, target_points)
 
-    visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices, highest_cov_points_source, highest_cov_points_target)
+    visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target)
