@@ -17,7 +17,7 @@
     slide[
       = Kommentar
       #box(fill: rgb("#ededed"), width: 100%, height: 90%, inset: 1cm)[
-        body
+        #body
       ]
     ]
   } else {
