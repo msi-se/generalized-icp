@@ -70,8 +70,13 @@
   + Implementierung in ROS - Versuch
     + Versuchsaufbau
     + Parameterisierung
+    + Implementierung ICP & GICP
     + Problem
-    + Implementierung
+    + Zeitmessung
+    + Turtlebot3 World
+    + Turtlebot3 ICP World
+    + Turtlebot3 World
+  + (Bild-)Quellen
 ]
 
 #comment[
