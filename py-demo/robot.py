@@ -154,7 +154,7 @@ def gicp_worker(raycast_queue, result_queue):
         start_time = time.time()
         _source_points = [rel_intersection for rel_intersection, _ in source_points]
         _target_points = [rel_intersection for rel_intersection, _ in target_points]
-        transformation_matrix, _, source_cov_matrices, target_cov_matrices = gicp(
+        transformation_matrix, _, source_cov_matrices, target_cov_matrices, _ , _, _ = gicp(
             _source_points,
             _target_points,
             max_distance_nearest_neighbors=200,

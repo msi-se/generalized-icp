@@ -173,7 +173,7 @@ def gicp(source_points, target_points, max_iterations=100, tolerance=1e-6, max_d
         highest_weight_points_source.append(transformed_source_points[highest_weight_indices])
         highest_weight_points_target.append(corresponding_target_points[highest_weight_indices])
 
-    return transformation_matrix, all_transformations, all_source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target
+    return transformation_matrix, all_transformations, initial_source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target, all_source_cov_matrices
 
 def apply_transformation(cloud, T):
     return np.dot(cloud[:, :2], T[:2, :2].T) + T[:2, 2]
@@ -359,6 +359,6 @@ if __name__ == "__main__":
     np.random.shuffle(target_points)
     target_points = target_points[:len(target_points) - 3]
 
-    T, all_transformations, source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target = gicp(source_points, target_points)
+    T, all_transformations, _, target_cov_matrices, highest_weight_points_source, highest_weight_points_target, source_cov_matrices = gicp(source_points, target_points)
 
     visualize_icp(source_points, target_points, all_transformations, source_cov_matrices, target_cov_matrices, highest_weight_points_source, highest_weight_points_target)
