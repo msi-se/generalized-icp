@@ -263,6 +263,7 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         surface.blit(ell, rotated_rect)
 
     show_ellipses = True
+    show_highest_cov = True
 
     while running:
         for event in pygame.event.get():
@@ -276,6 +277,8 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
                     step = (step + 1) % len(all_transformations)
                 if event.key == pygame.K_e:
                     show_ellipses = not show_ellipses
+                if event.key == pygame.K_c:
+                    show_highest_cov = not show_highest_cov
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
@@ -306,13 +309,14 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         # step = (step + 1) % len(all_transformations)
 
         # mark the 5 highest covariance matrices with a circle around them
-        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
-        for i in range(5):
-            try:
-                pygame.draw.circle(screen, colors[i], highest_cov_points_source[step][i].astype(int), 10, 2)
-                pygame.draw.circle(screen, colors[i], highest_cov_points_target[step][i].astype(int), 10, 2)
-            except IndexError:
-                pass
+        if show_highest_cov:
+            colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
+            for i in range(5):
+                try:
+                    pygame.draw.circle(screen, colors[i], highest_cov_points_source[step][i].astype(int), 10, 2)
+                    pygame.draw.circle(screen, colors[i], highest_cov_points_target[step][i].astype(int), 10, 2)
+                except IndexError:
+                    pass
 
         # Draw ellipses
         if show_ellipses:
