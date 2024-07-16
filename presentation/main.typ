@@ -506,6 +506,27 @@
 ]
 
 #slide[
+  = Versuchsaufbau
+
+  - Bag File
+  - Skript für Nodes
+  - Yaml files als configuration
+
+  #v(1cm)
+
+  - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
+  - drei unterschiedliche Maps
+  - unterschiedliche Parameterisierung
+  
+  #v(1cm)
+
+  - Bag Files mit Topics
+  - Python-Skript zur Auswertung
+  - Bokeh für Visualisierung
+]
+
+
+#slide[
   = Parameterisierung
 
   ```cpp
@@ -635,22 +656,6 @@
   ```
 ]
 
-#slide[
-  = 3 unterschiedliche Maps
-
-  - jeweils Bild reinmachen
-  - roboter war immer der gleiche
-
-
-]
-
-#slide[
-  = Versuchsaufbau
-
-  - fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-  - drei unterschiedliche Maps
-  - unterschiedliche Parameterisierung
-]
 
 #slide[
   = Turtlebot3 World
