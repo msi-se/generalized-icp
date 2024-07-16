@@ -2,9 +2,27 @@
 #import "@preview/lovelace:0.3.0": *
 
 
-#let (template, slide, title-slide, pause, uncover, only) = minideck.config(
-  theme: minideck.themes.simple.with(variant: "light"),
-)
+// compile:                    typst compile main.typ
+// compile with speaker notes: typst compile main.typ --input with-comments="true" with-notes.pdf
+
+#let template
+#let slide
+#let title-slide
+#let pause
+#let uncover
+#let only
+
+#if sys.inputs.at("with-comments", default: "false") == "true" {
+  (template, slide, title-slide, pause, uncover, only) = minideck.config(
+    theme: minideck.themes.simple.with(variant: "light"),
+    height: 40cm,
+  )
+} else {
+  (template, slide, title-slide, pause, uncover, only) = minideck.config(
+    theme: minideck.themes.simple.with(variant: "light"),
+  )
+}
+
 #show: template
 
 #set text(size: 16pt)
@@ -13,17 +31,21 @@
 #let comment(body) = {
   let showInPDF = sys.inputs.at("with-comments", default: "false") == "true"
   // let showInPDF = true
-  if showInPDF == true {
-    slide[
-      = Kommentar
-      #box(fill: rgb("#ededed"), width: 100%, height: 90%, inset: 1cm)[
+  if showInPDF == true [
+    #place(
+      bottom,
+      dx: 0cm,
+      dy: 0cm,
+    )[
+      #box(fill: rgb("#ededed"), width: 100%, height:45%, inset: 0.2cm)[
+        = Speaker Notes
         #set text(size: 13pt)
         #columns(2)[
           #body
         ]
       ]
     ]
-  } else {
+  ] else {
     none
   }
 }
@@ -79,10 +101,6 @@
   + (Bild-)Quellen
 ]
 
-#comment[
-  Test
-]
-
 #slide[
   #set page(background: [
     #place(
@@ -119,33 +137,35 @@
     - Standard-ICP & point-to-plane in *generelles Framework* überführen
     - *probabilistische* Betrachtung
     - Nutzung *Oberflächenstruktur* aus beiden Scans (Kovarianzmatrizen) → *plane-to-plane*
+
+  #comment[
+    - ICP Verfahren schon in Vorlesung
+    - grober Überblick
+    - ICP steht für Iterative Closest Point
+    - Scan-Matching-Algorithmus
+    - Schätzung der Transformation zwischen zwei Punktwolken
+    - Anwendung in der Lokalisierung mit z.B. LiDAR-Sensoren
+
+    - wurde 2009 von Segal, Haehnel & Thrun verbessert
+    - an Stanford University Verfahren entwickelt
+    - Generalized-ICP
+    - Ziel: ICP-Algorithmus verbessern und verallgemeinern
+      - Probleme Standard-ICP:
+        - nicht sehr robust
+        - sehr empfindlich gegenüber der Parameterwahl
+        - daher schlecht in mehreren Szenarien einsetzbar
+      - Standard-ICP & point-to-plane in generelles Framework überführen
+      - 2 große Änderungen:
+        - Wahrscheinlichkeitstheorie
+        - Nutzung planarer Strukturen
+          - Punktwolke sind nicht random im Raum verteilt
+          - haben Struktur zb von Wänden
+          - GICP nutzt diese Struktur in Form von Kovarianzmatrizen
+            - Überleitung Kovarianzmatrizen -> Mathematische Grundlagen
+  ]
+
 ]
 
-#comment[
-  - ICP Verfahren schon in Vorlesung
-  - grober Überblick
-  - ICP steht für Iterative Closest Point
-  - Scan-Matching-Algorithmus
-  - Schätzung der Transformation zwischen zwei Punktwolken
-  - Anwendung in der Lokalisierung mit z.B. LiDAR-Sensoren
-
-  - wurde 2009 von Segal, Haehnel & Thrun verbessert
-  - an Stanford University Verfahren entwickelt
-  - Generalized-ICP
-  - Ziel: ICP-Algorithmus verbessern und verallgemeinern
-    - Probleme Standard-ICP:
-      - nicht sehr robust
-      - sehr empfindlich gegenüber der Parameterwahl
-      - daher schlecht in mehreren Szenarien einsetzbar
-    - Standard-ICP & point-to-plane in generelles Framework überführen
-    - 2 große Änderungen:
-      - Wahrscheinlichkeitstheorie
-      - Nutzung planarer Strukturen
-        - Punktwolke sind nicht random im Raum verteilt
-        - haben Struktur zb von Wänden
-        - GICP nutzt diese Struktur in Form von Kovarianzmatrizen
-          - Überleitung Kovarianzmatrizen -> Mathematische Grundlagen
-]
 
 #slide[
   = Theorie - Mathematische Grundlagen
@@ -162,20 +182,22 @@
   - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
   - der Parameter wird ausgewählt, der die beobachteten Daten am wahrscheinlichsten macht
   - oft verwendet um: $arg max_p ...$ / $arg min_p ...$ zu finden
+
+  #comment[
+    - Mathematische Grundlagen sind lediglich für ein gemeinsames Verständnis
+    - sodass auch Leute, die nicht die Vorlesung besucht haben, den Vortrag verstehen könnten
+
+    - Kovarianzmatrix beschreibt die Streuung von Zufallsvariablen
+    - in unserem Kontext: Verteilung von Punkte in der Umgebung
+    - wo unsere Punkte mit welcher Wahrscheinlichkeit liegen
+
+    - Maximum Likelihood Estimation brauchen wir für die Schätzung der Transformation bei ICP und GICP
+    - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
+    - versucht quasi die Parameter zu finden, die eine gegebene Wahrscheinlichkeitsverteilung am besten beschreiben
+  ]
+
 ]
 
-#comment[
-  - Mathematische Grundlagen sind lediglich für ein gemeinsames Verständnis
-  - sodass auch Leute, die nicht die Vorlesung besucht haben, den Vortrag verstehen könnten
-
-  - Kovarianzmatrix beschreibt die Streuung von Zufallsvariablen
-  - in unserem Kontext: Verteilung von Punkte in der Umgebung
-  - wo unsere Punkte mit welcher Wahrscheinlichkeit liegen
-
-  - Maximum Likelihood Estimation brauchen wir für die Schätzung der Transformation bei ICP und GICP
-  - Schätzverfahren für Parameter von Wahrscheinlichkeitsverteilungen
-  - versucht quasi die Parameter zu finden, die eine gegebene Wahrscheinlichkeitsverteilung am besten beschreiben
-]
 
 
 #slide[
@@ -213,29 +235,31 @@
     )
 
   ]
+
+  #comment[
+    - wie schon gesagt: Standard ICP lässt uns Transformation zwischen zwei Punktwolken schätzen
+    - dabei ist er sehr einfach und schnell
+    - vergleicht korrespondierende Punkte in beiden Wolken
+    - minimiert die quadratischen Abstände korrespondierender Punkte
+    - schätzt so die Transformation
+    - in Pseudocode dargestellt
+    - Startwert für Transformation $T_0$
+      - kann bereits eine sinnvolle Schätzung sein (z.b. Odometrie)
+    - Loop bis der Algorithmus konvergiert (daher auch "Iterative")
+    - für jeden Punkt in der Quellwolke $b_i$ wird der nächste Punkt in der Zielwolke $A$ gesucht
+    - dann wird geschaut ob der Abstand kleiner als das Threshold $d_(max)$ ist
+      - Parameter steuert also, welche Punkte berücksichtigt werden und welche nicht
+      - ist je nach Anwendungsszenario unterschiedlich
+        - wenn Roboter schneller fährt, dann muss $d_(max)$ größer sein
+        - schwierig einzustellen
+    - Punkt wird gewichtet, oder nicht
+    - am Ende jedes Durchlaufs wird die Transformation berechnet
+      - durch Veränderung der Transformationsparameter
+      - so dass die quadratischen Abstände minimiert werden
+  ]
+
 ]
 
-#comment[
-  - wie schon gesagt: Standard ICP lässt uns Transformation zwischen zwei Punktwolken schätzen
-  - dabei ist er sehr einfach und schnell
-  - vergleicht korrespondierende Punkte in beiden Wolken
-  - minimiert die quadratischen Abstände korrespondierender Punkte
-  - schätzt so die Transformation
-  - in Pseudocode dargestellt
-  - Startwert für Transformation $T_0$
-    - kann bereits eine sinnvolle Schätzung sein (z.b. Odometrie)
-  - Loop bis der Algorithmus konvergiert (daher auch "Iterative")
-  - für jeden Punkt in der Quellwolke $b_i$ wird der nächste Punkt in der Zielwolke $A$ gesucht
-  - dann wird geschaut ob der Abstand kleiner als das Threshold $d_(max)$ ist
-    - Parameter steuert also, welche Punkte berücksichtigt werden und welche nicht
-    - ist je nach Anwendungsszenario unterschiedlich
-      - wenn Roboter schneller fährt, dann muss $d_(max)$ größer sein
-      - schwierig einzustellen
-  - Punkt wird gewichtet, oder nicht
-  - am Ende jedes Durchlaufs wird die Transformation berechnet
-    - durch Veränderung der Transformationsparameter
-    - so dass die quadratischen Abstände minimiert werden
-]
 
 
 #slide[
@@ -256,20 +280,22 @@
       ],
     )
   ]
+
+  #comment[
+    - Point-to-Plane-ICP ist eine Erweiterung des Standard-ICP
+    - Standard-ICP betrachtet keine Oberflächenstruktur
+      - bei Laserscan zum Beispiel:
+        - wenn 2 mal eine Wand gescant
+        - Punkte zwar durch die Abtastrate unterschiedlichen Stellen im Raum
+        - kann sein, dass die Bewegung zur Wand nicht wirklich groß war
+    - um dies entgegenzuwirken, vergleicht Point-to-Plane-ICP Punkte in einer Wolke zu Ebenen in der anderen
+    - Ebenen wird durch Punkt und Normalenvektor definiert
+    - Optimierungsfunktion in der letzten Zeile des Algorithmus:
+      - minimiert quadratische Abstände zwischen Punkt und Ebene
+  ]
+
 ]
 
-#comment[
-  - Point-to-Plane-ICP ist eine Erweiterung des Standard-ICP
-  - Standard-ICP betrachtet keine Oberflächenstruktur
-    - bei Laserscan zum Beispiel:
-      - wenn 2 mal eine Wand gescant
-      - Punkte zwar durch die Abtastrate unterschiedlichen Stellen im Raum
-      - kann sein, dass die Bewegung zur Wand nicht wirklich groß war
-  - um dies entgegenzuwirken, vergleicht Point-to-Plane-ICP Punkte in einer Wolke zu Ebenen in der anderen
-  - Ebenen wird durch Punkt und Normalenvektor definiert
-  - Optimierungsfunktion in der letzten Zeile des Algorithmus:
-    - minimiert quadratische Abstände zwischen Punkt und Ebene
-]
 
 #slide[
   = Theorie - Standard-ICP, Point-to-Plane, Generalized-ICP
@@ -302,31 +328,32 @@
       )
     ],
   )
+
+  #comment[
+
+    - hier nochmal ein Überblick über die verschiedenen ICP-Verfahren
+
+    - Point-to-Point: Standard-ICP
+      - vergleicht Punkt mit Punkt
+      - einfach und schnell
+      - aber nicht robust sehr empfindlich gegenüber Parameterwahl
+
+    - Point-to-Plane:
+      - vergleicht Punkt mit Ebene durch Normalenvektor
+      - besser als Standard-ICP
+      - nutzt Oberflächenstruktur einer Punktwolke
+      - aber eben nur von einer
+
+    - Generalized-ICP:
+      - quasi "Plane-to-Plane"
+      - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
+      - wenn in Ebene → Kovarianzmatrix ist "flach"
+        - sieht man in Bild rechts
+      - nutzt Oberflächenstruktur beider Punktwolken
+      - welche Ergebnisse dies hat, dazu später mehr
+  ]
 ]
 
-#comment[
-
-  - hier nochmal ein Überblick über die verschiedenen ICP-Verfahren
-
-  - Point-to-Point: Standard-ICP
-    - vergleicht Punkt mit Punkt
-    - einfach und schnell
-    - aber nicht robust sehr empfindlich gegenüber Parameterwahl
-
-  - Point-to-Plane:
-    - vergleicht Punkt mit Ebene durch Normalenvektor
-    - besser als Standard-ICP
-    - nutzt Oberflächenstruktur einer Punktwolke
-    - aber eben nur von einer
-
-  - Generalized-ICP:
-    - quasi "Plane-to-Plane"
-    - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
-    - wenn in Ebene → Kovarianzmatrix ist "flach"
-      - sieht man in Bild rechts
-    - nutzt Oberflächenstruktur beider Punktwolken
-    - welche Ergebnisse dies hat, dazu später mehr
-]
 
 #let gicp-algo = [
   #pseudocode-list[
@@ -354,20 +381,23 @@
   = Theorie - GICP-Algorithmus
 
   #gicp-algo
+
+
+  #comment[
+    - im Paper wurde Algorithmus nie zusammenhängend dargestellt
+      - deshalb hier nochmals selber zusammengebaut
+    - Anfang des Algorithmus gleich wie bei Standard-ICP
+    - statt Gewichtung mit 0 oder 1 werden Kovarianzmatrizen verwendet
+      - wie genau diese berechnet bzw gewählt werden, dazu mehr auf der nächsten Folie
+    - Minimierungsfunktion am Ende des Schleifendurchlaufs anders
+      - nutzt Gewichtungsmatrix, die aus den Kovarianzmatrizen berechnet wird
+        - mittlere Teil der Minimierungsfunktion
+    - im Paper wird für die Optimierung der Transformation also für arg min Maximum Likelihood Estimation verwendet
+      - wählt Transformationsmatrix T so dass die Verteilung am wahrscheinlichsten ist
+  ]
+
 ]
 
-#comment[
-  - im Paper wurde Algorithmus nie zusammenhängend dargestellt
-    - deshalb hier nochmals selber zusammengebaut
-  - Anfang des Algorithmus gleich wie bei Standard-ICP
-  - statt Gewichtung mit 0 oder 1 werden Kovarianzmatrizen verwendet
-    - wie genau diese berechnet bzw gewählt werden, dazu mehr auf der nächsten Folie
-  - Minimierungsfunktion am Ende des Schleifendurchlaufs anders
-    - nutzt Gewichtungsmatrix, die aus den Kovarianzmatrizen berechnet wird
-      - mittlere Teil der Minimierungsfunktion
-  - im Paper wird für die Optimierung der Transformation also für arg min Maximum Likelihood Estimation verwendet
-    - wählt Transformationsmatrix T so dass die Verteilung am wahrscheinlichsten ist
-]
 
 #slide[
 
@@ -382,7 +412,7 @@
       radius: 0.1cm,
     )
   ]
-  
+
   #place(
     dx: -0.2cm,
     dy: 2.6cm,
@@ -439,30 +469,32 @@
       ],
     )
   ]
+
+  #comment[
+    - Wahl der Kovarianzmatrizen sind also entscheidend für den GICP-Algorithmus
+    - auch der Grund, warum "Generalized" ICP
+      - denn es lässt sich auch Standard-ICP und Point-to-Plane-ICP dadurch abdecken
+    - für Standard-ICP werden Kovarianzmatrizen einfach auf 0 bzw 1 gesetzt
+      - dadurch werden die Punkte einfach gewichtet und es wird keine Oberflächenstruktur berücksichtigt
+    - für Point-to-Plane-ICP werden die Source-Kovarianzmatrizen auf Projektionsmatrizen gesetzt
+      - diese beinhalten den Normalenvektor der Ebene
+      - Oberflächenstruktur der einen Wolke berücksichtigt
+    - aber richtig gut erst bei dem im Paper vorgeschlagenen Verfahren
+      - quasi "Plane to Plane"
+    - hier werden wirklich Kovarianzmatrizen ausgerechnet
+      - 20 umliegende Punkte werden betrachtet
+      - Verteilung mit Hauptkomponentenanalyse bestimmt
+    - allerdings auch etwas mehr Rechenaufwand bei jeder Iteration
+    - Berechnen Kovarianzmatrizen geschiet bei beiden Wolken -> Berücksichtigung beider Oberflächenstrukturen
+
+    - Bild rechts zeigt Kovarianzmatrizen für paar Punkte
+      - man sieht:
+        - Ausrichtung/Wölbung stimmt mit Ebene überein
+        - Kovarianzmatrix ist "flach"
+  ]
+
 ]
 
-#comment[
-  - Wahl der Kovarianzmatrizen sind also entscheidend für den GICP-Algorithmus
-  - auch der Grund, warum "Generalized" ICP
-    - denn es lässt sich auch Standard-ICP und Point-to-Plane-ICP dadurch abdecken
-  - für Standard-ICP werden Kovarianzmatrizen einfach auf 0 bzw 1 gesetzt
-    - dadurch werden die Punkte einfach gewichtet und es wird keine Oberflächenstruktur berücksichtigt
-  - für Point-to-Plane-ICP werden die Source-Kovarianzmatrizen auf Projektionsmatrizen gesetzt
-    - diese beinhalten den Normalenvektor der Ebene
-    - Oberflächenstruktur der einen Wolke berücksichtigt
-  - aber richtig gut erst bei dem im Paper vorgeschlagenen Verfahren
-    - quasi "Plane to Plane"
-  - hier werden wirklich Kovarianzmatrizen ausgerechnet
-    - 20 umliegende Punkte werden betrachtet
-    - Verteilung mit Hauptkomponentenanalyse bestimmt
-  - allerdings auch etwas mehr Rechenaufwand bei jeder Iteration
-  - Berechnen Kovarianzmatrizen geschiet bei beiden Wolken -> Berücksichtigung beider Oberflächenstrukturen
-  
-  - Bild rechts zeigt Kovarianzmatrizen für paar Punkte
-    - man sieht:
-      - Ausrichtung/Wölbung stimmt mit Ebene überein
-      - Kovarianzmatrix ist "flach" 
-]
 
 #slide[
   = Theorie - GICP-Algorithmus
