@@ -206,6 +206,28 @@
   ]
 ]
 
+#comment[
+  - wie schon gesagt: Standard ICP lässt uns Transformation zwischen zwei Punktwolken schätzen
+  - dabei ist er sehr einfach und schnell
+  - vergleicht korrespondierende Punkte in beiden Wolken
+  - minimiert die quadratischen Abstände korrespondierender Punkte
+  - schätzt so die Transformation
+  - in Pseudocode dargestellt
+  - Startwert für Transformation $T_0$
+    - kann bereits eine sinnvolle Schätzung sein (z.b. Odometrie)
+  - Loop bis der Algorithmus konvergiert (daher auch "Iterative")
+  - für jeden Punkt in der Quellwolke $b_i$ wird der nächste Punkt in der Zielwolke $A$ gesucht
+  - dann wird geschaut ob der Abstand kleiner als das Threshold $d_(max)$ ist
+    - Parameter steuert also, welche Punkte berücksichtigt werden und welche nicht
+    - ist je nach Anwendungsszenario unterschiedlich
+      - wenn Roboter schneller fährt, dann muss $d_(max)$ größer sein
+      - schwierig einzustellen
+  - Punkt wird gewichtet, oder nicht
+  - am Ende jedes Durchlaufs wird die Transformation berechnet
+    - hierfür wird beispielweise Maximum Likelihood Estimation verwendet, um die quadratischen Abstände zu minimieren
+]
+
+
 #slide[
   = Theorie - Point-to-Plane-ICP
   #columns(2)[
@@ -214,7 +236,7 @@
     - Ebenen wird durch Punkt und Normalenvektor definiert
 
     #v(1cm)
-    $T arrow.l arg min_T {sum_i ((T dot.op b_i - m_i) * bold(n_i))^2}$
+    $T arrow.l arg min_T {sum_i ((T dot.op b_i - m_i) dot.op bold(n_i))^2}$
 
     #colbreak()
     #figure(
@@ -226,17 +248,38 @@
   ]
 ]
 
+#comment[
+  - Point-to-Plane-ICP ist eine Erweiterung des Standard-ICP
+  - Standard-ICP betrachtet keine Oberflächenstruktur
+    - bei Laserscan zum Beispiel:
+      - wenn 2 mal eine Wand gescant
+      - Punkte zwar durch die Abtastrate unterschiedlichen Stellen im Raum
+      - kann sein, dass die Bewegung zur Wand nicht wirklich groß war
+  - um dies entgegenzuwirken, vergleicht Point-to-Plane-ICP Punkte in einer Wolke zu Ebenen in der anderen
+  - Ebenen wird durch Punkt und Normalenvektor definiert
+  - Optimierungsfunktion in der letzten Zeile des Algorithmus:
+    - minimiert quadratische Abstände zwischen Punkt und Ebene
+]
+
 #slide[
-  = Theorie - Standard-ICP, point-to-plane, Generalized-ICP
+  = Theorie - Standard-ICP, Point-to-Plane, Generalized-ICP
 
   #grid(
     columns: 2,
     [
-      - *point-to-point* (Standard-ICP)
-      - *point-to-plane*
+      - *Point-to-Point*
+        - Standard-ICP
+        - vergleicht Punkt mit Punkt
+      
+      #v(0.2cm)
+      
+      - *Point-to-Plane*
         - vergleicht Punkt mit Ebene durch Normalenvektor
+
+      #v(0.2cm)
+
       - *Generalized-ICP*
-        - quasi "plane-to-plane"
+        - quasi "Plane-to-Plane"
         - vergleicht die Kovarianzmatrizen der nächsten Punkte → probabilistisch
         - wenn in Ebene → Kovarianzmatrix ist "flach"
     ],
@@ -249,8 +292,6 @@
       )
     ],
   )
-
-  #v(1cm)
 ]
 
 #slide[
@@ -287,13 +328,13 @@
     + $C_i^B arrow.l$ `computeCovarianceMatrix`$(m_i)$
   ]
 
-  - für *Standard-ICP* (point-to-point):
+  - für *Standard-ICP* (Point-to-Point):
     - $C_i^A arrow.l 0$
     - $C_i^B arrow.l 1$ #h(3.3em) → keine Oberflächenstruktur berücksichtigt (einfache Gewichtung)
 
   #v(0.2cm)
 
-  - für *point-to-plane*:
+  - für *Point-to-Plane*:
     - $C_i^A arrow.l 0$
     - $C_i^B arrow.l P_i^(-1)$ #h(2em) → $P_i$ ist die Projektionsmatrix auf die Ebene (beinhaltet Normalenvektor)
 
