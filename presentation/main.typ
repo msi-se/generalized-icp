@@ -421,13 +421,13 @@
 
   #columns(2)[
 
-    - für *plane-to-plane* (im Paper vorgeschlagene Methode):
+    - für *Plane-to-Plane* (im Paper vorgeschlagene Methode):
       - `computeCovarianceMatrix` berechnet Kovarianzmatrix unter Betrachtung der nächsten 20 Punkte
         - verwendet *PCA* (Principal Component Analysis/Hauptkomponentenanalyse)
 
     #colbreak()
     #figure(
-      caption: [Plane-to-plane @segal-gicp],
+      caption: [Plane-to-Plane @segal-gicp],
       [
         #image("./assets/plane-to-plane.png", width: 100%)
       ],
@@ -437,6 +437,25 @@
 
 #comment[
   - Wahl der Kovarianzmatrizen sind also entscheidend für den GICP-Algorithmus
+  - auch der Grund, warum "Generalized" ICP
+    - denn es lässt sich auch Standard-ICP und Point-to-Plane-ICP dadurch abdecken
+  - für Standard-ICP werden Kovarianzmatrizen einfach auf 0 bzw 1 gesetzt
+    - dadurch werden die Punkte einfach gewichtet und es wird keine Oberflächenstruktur berücksichtigt
+  - für Point-to-Plane-ICP werden die Source-Kovarianzmatrizen auf Projektionsmatrizen gesetzt
+    - diese beinhalten den Normalenvektor der Ebene
+    - Oberflächenstruktur der einen Wolke berücksichtigt
+  - aber richtig gut erst bei dem im Paper vorgeschlagenen Verfahren
+    - quasi "Plane to Plane"
+  - hier werden wirklich Kovarianzmatrizen ausgerechnet
+    - 20 umliegende Punkte werden betrachtet
+    - Verteilung mit Hauptkomponentenanalyse bestimmt
+  - allerdings auch etwas mehr Rechenaufwand bei jeder Iteration
+  - Berechnen Kovarianzmatrizen geschiet bei beiden Wolken -> Berücksichtigung beider Oberflächenstrukturen
+  
+  - Bild rechts zeigt Kovarianzmatrizen für paar Punkte
+    - man sieht:
+      - Ausrichtung/Wölbung stimmt mit Ebene überein
+      - Kovarianzmatrix ist "flach" 
 ]
 
 #slide[
