@@ -875,6 +875,28 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
       #image("./assets/auswertung/trajectory_plot_iterations.png", width: 90%)
     ],
   )
+
+  #comment[
+    *corr_dist*: max correspondence distance
+    - icp mit 0,1 deutlich schlechter in position und orientation
+    - gicp mit 0,1 sogar am besten
+    - keine großen Unterschiede von 0,2 und 0,5
+    => gicp robuster gegenüber Parameterwahl
+    - alignment time bei gicp deutlich höher
+    - alignment time bei gicp und icp parameterunabhängig
+    *fit_eps*: euclidean fitness epsilon
+    - icp mit 0,1 deutlich schlechter in position und orientation
+    - gicp mit 0,00001 am besten
+    - rest relativ ähnlich
+    - alignment gleich wie bei corr_dist
+    => gicp robuster gegenüber Parameterwahl
+    *iterations*: maximum iterations
+    - gicp mit 10 deutlich schlechter in position und orientation
+    - icp mit 10 deutlich schlechter in orientation
+    - rest relativ ähnlich
+    - alignment time bei gicp 10 iterations niedriger => algorithmus terminiert
+    - restliche Zeit bei gicp und icp kaum unterschiede
+  ]
 ]
 
 #slide[
@@ -884,6 +906,14 @@ new_estimated_yaw = last_estimated_yaw + delta_yaw
   #v(2cm)
   #set align(center)
   #image("./assets/auswertung/trajectory_plot_variance.png", width: 50%)
+
+  #set align(left)
+  #comment[
+    - durchläufe relativ konstant
+    - gibt abweichungen in position und orientation
+    - gibt fast perfekt gleiche trajectories
+    => Ist Simulation
+  ]
 ]
 
 #slide[
