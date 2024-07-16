@@ -224,7 +224,8 @@
       - schwierig einzustellen
   - Punkt wird gewichtet, oder nicht
   - am Ende jedes Durchlaufs wird die Transformation berechnet
-    - hierfür wird beispielweise Maximum Likelihood Estimation verwendet, um die quadratischen Abstände zu minimieren
+    - durch Veränderung der Transformationsparameter
+    - so dass die quadratischen Abstände minimiert werden
 ]
 
 
@@ -342,6 +343,18 @@
   ]
 ]
 
+#comment[
+  - im Paper wurde Algorithmus nie zusammenhängend dargestellt
+    - deshalb hier nochmals selber zusammengebaut
+  - Anfang des Algorithmus gleich wie bei Standard-ICP
+  - statt Gewichtung mit 0 oder 1 werden Kovarianzmatrizen verwendet
+    - wie genau diese berechnet bzw gewählt werden, dazu mehr auf der nächsten Folie
+  - Minimierungsfunktion am Ende des Schleifendurchlaufs anders
+    - nutzt Gewichtungsmatrix, die aus den Kovarianzmatrizen berechnet wird
+      - mittlere Teil der Minimierungsfunktion
+  - im Paper wird für die Optimierung der Transformation also für arg min Maximum Likelihood Estimation verwendet
+    - wählt Transformationsmatrix T so dass die Verteilung am wahrscheinlichsten ist
+]
 
 
 #slide[
