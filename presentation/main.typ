@@ -484,7 +484,9 @@
     - hier werden wirklich Kovarianzmatrizen ausgerechnet
       - 20 umliegende Punkte werden betrachtet
       - Verteilung mit Hauptkomponentenanalyse bestimmt
-      - wenn hier eine genauere, mathematische Erklärung gewünscht, später darauf eingehen
+      - wenn hier eine genauere, mathematische Erklärung gewünscht
+        - später darauf eingehen
+        - Folie vorbereitet
     - allerdings auch etwas mehr Rechenaufwand bei jeder Iteration
     - Berechnen Kovarianzmatrizen geschiet bei beiden Wolken -> Berücksichtigung beider Oberflächenstrukturen
 
