@@ -565,9 +565,9 @@
 
   #v(1cm)
   - Szenarien:
-    - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-    - Unterschiedliche Parameterisierung
     - Drei unterschiedliche Maps
+    - Unterschiedliche Parameterisierung
+    - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
   
   #v(1cm)
   - Auswertung:
@@ -761,18 +761,49 @@
 
 #slide[
   = Auswertung
-  == Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
-]
+  == Drei unterschiedliche Maps
 
+  #v(3cm)
+  #grid(
+    columns: 3,
+    [
+      #image("./assets/auswertung/trajectory_plot_variance_round_1.png", width: 90%)
+    ],
+    [
+      #image("./assets/auswertung/trajectory_plot_turtlebot3_world.png", width: 90%)
+    ],
+    [
+      #image("./assets/auswertung/trajectory_plot_turtlebot3_dqn_stage1.png", width: 90%)
+    ],
+  )
+]
 
 #slide[
   = Auswertung
   == Unterschiedliche Parameterisierung
+
+  #v(3cm)
+  #grid(
+    columns: 3,
+    [
+      #image("./assets/auswertung/trajectory_plot_corr_dist.png", width: 90%)
+    ],
+    [
+      #image("./assets/auswertung/trajectory_plot_fit_eps.png", width: 90%)
+    ],
+    [
+      #image("./assets/auswertung/trajectory_plot_iterations.png", width: 90%)
+    ],
+  )
 ]
 
 #slide[
-  = Auswertung 
-  == Drei unterschiedliche Maps
+  = Auswertung
+  == Fünf Durchgänge mit Standardparameterisierung (ICP & GICP)
+
+  #v(2cm)
+  #set align(center)
+  #image("./assets/auswertung/trajectory_plot_variance.png", width: 50%)
 ]
 
 #slide[
