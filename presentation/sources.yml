@@ -24,3 +24,8 @@ point-to-plane-icp:
   author: Kok-Lim Low
   url: https://www.comp.nus.edu.sg/~lowkl/publications/lowk_point-to-plane_icp_techrep.pdf
   date: 2004
+
+IDAPILecture14:
+  type: Web
+  title: Intelligent Data Analysis and Probabilistic Inference Lecture 14
+  date: 2018

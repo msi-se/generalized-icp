@@ -1047,49 +1047,48 @@
   = Anhang - Bestimmung der Kovarianzmatrizen bei Plane-to-Plane GICP
 
   ```py
-  def compute_covariance_matrix_single_point(point, neighbors):
-    epsilon = 1e-6
-    covariance_ground = np.array([[epsilon, 0],
-                                  [0,       1]])
-    covariance = np.cov(neighbors, rowvar=False)
-    U, D, V = np.linalg.svd(covariance)               # Singular Value Decomposition
-    covariance_aligned = U @ covariance_ground @ U.T  # Align covariance matrix
-    return covariance_aligned
+  covariance_ground = np.array([[epsilon, 0], [0,       1]])
+  covariance = np.cov(neighbors, rowvar=False)
+  eigenvalues, eigenvectors = np.linalg.eig(covariance)
+  ev = eigenvectors[:, np.argmax(eigenvalues)]     # vector with highest eigenvalue
+  rotation_matrix = np.array([[ev[0], -ev[1]], [ev[1], ev[0]]])
+  covariance_aligned = rotation_matrix @ covariance_ground @ rotation_matrix.T
   ```
 
   #v(0.5cm)
 
   #columns(2)[
-    *Single Value Decomposition*
-    - Zerlegung einer Matrix in drei Matrizen:
-      - Rotation #sym.arrow.r Skalierung #sym.arrow.r Rotation
-    - wird hier verwendet, um die Rotation der Kovarianzmatrix zu bestimmen
-      - Rotation sollte so sein, wie die Nachbarn liegen (Ebene)
-    - die Rotation wird dann auf die "Standard-Kovarianzmatrix" angewendet
-      - bildet so die Ebene ab
+
+    - nicht einfach die Kovarianzmatrix der Nachbars-Punkte
+    - normalisiert
+    - Kovarianzmatrix für die Ebene erstellt:
+      $mat(epsilon, 0; 0, 1)$
+      - $epsilon$ ist ein kleiner Wert
+    - Lage der Punkte im Raum betrachtet
+      - Hauptkomponentenanalyse (Eigenvektoren und Eigenwerte)
+      - Eigenvektor mit höchstem Eigenwert
+    - Einheits-Kovarianzmatrix wird um die Lage der Punkte im Raum gedreht
 
     #colbreak()
 
     #figure(
-      caption: "Singular Value Decomposition (Wikipedia)",
+      caption: [Eigenvektoren spiegeln die Lage der Punkte im Raum wider @IDAPILecture14],
       [
-        #image("./assets/svd.svg", width: 70%)
+        #image("./assets/pca.png", width: 70%)
       ],
     )
   ]
 
   #comment[
-    - es wird Single Value Decomposition verwendet
-    - Zerlegung einer Matrix in drei Matrizen:
-      - Rotation #sym.arrow.r Skalierung #sym.arrow.r Rotation
-    - wird hier verwendet, um die Rotation der Kovarianzmatrix zu bestimmen
-      - Rotation sollte so sein, wie die Nachbarn liegen
-    - die Rotation wird dann auf die "Standard-Kovarianzmatrix" angewendet
-      - bildet so die Ebene ab
-
-    - in Paper wird in Fußnote erwähnt, dass sie bei ihrer Implementierung PCA (Hauptkomponentenanalyse) verwendet haben
-    - bei unserem eigene 2D-Skript hat das allerdings nicht so gut funktioniert wie die Alternative mit SVD
-
+    - es wird nicht einfach die Kovarianzmatrix der Punkte genommen
+    - sondern normalisiert erzeugt:
+    - zunächst wird eine Kovarianzmatrix für die Ebene erstellt
+      - epsilon ist ein kleiner Wert
+    - dann wird die Lage der Punkte im Raum betrachtet
+      - dies geschieht durch die Hauptkomponentenanalyse (Eigenvektoren und Eigenwerte)
+    - die Einheits-Kovarianzmatrix wird dann um die Lage der Punkte im Raum gedreht
+    - eine Alternative zur Hauptkomponentenanalyse wäre die Singular Value Decomposition
+      - auch Rotation extrahiert werden kann
   ]
 
 ]
