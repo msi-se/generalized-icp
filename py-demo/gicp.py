@@ -263,7 +263,7 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
         rotated_rect = ell.get_rect(center=center)
         surface.blit(ell, rotated_rect)
 
-    show_ellipses = True
+    show_ellipses = 1
     show_highest_cov = True
 
     while running:
@@ -277,7 +277,8 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
                 if event.key == pygame.K_RIGHT:
                     step = (step + 1) % len(all_transformations)
                 if event.key == pygame.K_e:
-                    show_ellipses = not show_ellipses
+                    show_ellipses += 1
+                    show_ellipses %= 3
                 if event.key == pygame.K_c:
                     show_highest_cov = not show_highest_cov
                 if event.key == pygame.K_ESCAPE:
@@ -320,9 +321,14 @@ def visualize_icp(source_cloud, target_cloud, all_transformations, source_cov_ma
                     pass
 
         # Draw ellipses
-        if show_ellipses:
-            for i, point in enumerate(transformed_source):
-                draw_ellipse(screen, yellow, point, source_cov_matrices[step][i])
+        if show_ellipses != 0:
+            if show_ellipses == 1:
+                for i, point in enumerate(source_points):
+                    draw_ellipse(screen, yellow, point, source_cov_matrices[0][i])
+            
+            if show_ellipses == 2:
+                for i, point in enumerate(transformed_source):
+                    draw_ellipse(screen, yellow, point, source_cov_matrices[step][i])
         
             for i, point in enumerate(target_points):
                 draw_ellipse(screen, green, point, target_cov_matrices[i])
