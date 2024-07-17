@@ -731,25 +731,25 @@
     - Python-Skript zur Auswertung
     - Bokeh für Visualisierung
 
-    #comment[
-      - Vorbedingungen:
+  #comment[
+    - Vorbedingungen:
 
-        - Bag File: beispiel trajektorie wird in ROS-Bag-Datei gespeichert, die als Input für die Experimente dient und immmer den gleichen Datensatz zur Verfügung stellt
-        - Skript für Nodes: Skripte, die die notwendigen ROS-Nodes starten und konfigurieren.
-        - Yaml-Dateien als Konfiguration: Konfigurationsdateien im YAML-Format, die die Parameter und Einstellungen für die Experimente enthalten.
+      - Bag File: beispiel trajektorie wird in ROS-Bag-Datei gespeichert, die als Input für die Experimente dient und immmer den gleichen Datensatz zur Verfügung stellt
+      - Skript für Nodes: Skripte, die die notwendigen ROS-Nodes starten und konfigurieren.
+      - Yaml-Dateien als Konfiguration: Konfigurationsdateien im YAML-Format, die die Parameter und Einstellungen für die Experimente enthalten.
 
-      - Szenarien:
-        - Drei unterschiedliche Maps: Die Experimente werden auf drei verschiedenen Karten durchgeführt, um die Robustheit der Algorithmen in unterschiedlichen Umgebungen zu überprüfen.
-        - Unterschiedliche Parameterisierung: Es werden verschiedene Parametereinstellungen getestet, um die Auswirkungen auf die Genauigkeit und Laufzeit der Algorithmen zu analysieren.
-        - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Gleiches Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
+    - Szenarien:
+      - Drei unterschiedliche Maps: Die Experimente werden auf drei verschiedenen Karten durchgeführt, um die Robustheit der Algorithmen in unterschiedlichen Umgebungen zu überprüfen.
+      - Unterschiedliche Parameterisierung: Es werden verschiedene Parametereinstellungen getestet, um die Auswirkungen auf die Genauigkeit und Laufzeit der Algorithmen zu analysieren.
+      - Fünf Durchgänge mit Standardparameterisierung (ICP & GICP): Gleiches Szenario wird fünfmal mit den Standardparametern für sowohl ICP als auch GICP durchgeführt, um die Varianz der Algorithmen zu überprüfen.
 
-      - Auswertung
-        - Bag Files mit Topics: Die während der Experimente generierten Daten werden in ROS-Bag-Dateien gespeichert, die verschiedene Topics enthalten, die für die Auswertung relevant sind.
-        - Python-Skript zur Auswertung: Ein Python-Skript analysiert die gespeicherten Daten und berechnet relevante Metriken wie RMSE, Orientation Error, Position Error.
-        - Bokeh für Visualisierung: Die Ergebnisse der Auswertungen werden mit Hilfe von Bokeh visualisiert, um die Unterschiede zwischen den Algorithmen und den verschiedenen Szenarien anschaulich darzustellen.
+    - Auswertung
+      - Bag Files mit Topics: Die während der Experimente generierten Daten werden in ROS-Bag-Dateien gespeichert, die verschiedene Topics enthalten, die für die Auswertung relevant sind.
+      - Python-Skript zur Auswertung: Ein Python-Skript analysiert die gespeicherten Daten und berechnet relevante Metriken wie RMSE, Orientation Error, Position Error.
+      - Bokeh für Visualisierung: Die Ergebnisse der Auswertungen werden mit Hilfe von Bokeh visualisiert, um die Unterschiede zwischen den Algorithmen und den verschiedenen Szenarien anschaulich darzustellen.
 
-      - Diese strukturierte Vorgehensweise gewährleistet eine umfassende und nachvollziehbare Bewertung der Performance von GICP und ICP in unterschiedlichen Testumgebungen. Desweiteren erlaubt es wiederholbare Experimente und eine einfache Vergleichbarkeit der Ergebnisse. Es wird jeweils nur ein Parameter verändert, um die Auswirkungen auf die Ergebnisse zu analysieren.
-    ]
+    - Diese strukturierte Vorgehensweise gewährleistet eine umfassende und nachvollziehbare Bewertung der Performance von GICP und ICP in unterschiedlichen Testumgebungen. Desweiteren erlaubt es wiederholbare Experimente und eine einfache Vergleichbarkeit der Ergebnisse. Es wird jeweils nur ein Parameter verändert, um die Auswirkungen auf die Ergebnisse zu analysieren.
+  ]
 ]
 
 
