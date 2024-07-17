@@ -5,20 +5,21 @@ import pygame
 from pygame.locals import QUIT
 from scipy.optimize import fmin_cg
 
-def compute_covariance_matrix_single_point(point, neighbors):
+def compute_covariance_matrix_single_point(neighbors, epsilon=100):
     # "In our implementation we compute these transformations by considering
     # the eigen decomposition of the empirical covariance of the 20 closest points,
     # Σ = UDUT . We then use U in place of the rotation matrix (in effect
     # replacing D with diag(ǫ, 1, 1) to get the ﬁnal surface-aligned matrix)." (GICP from Segal et al.)
 
-    epsilon = 100
     covariance_ground = np.array([[epsilon, 0], [0, epsilon*0.1]])
     covariance = np.cov(neighbors, rowvar=False)
-    U, D, V = np.linalg.svd(covariance)
-    covariance_aligned = U @ covariance_ground @ U.T
+    eigenvalues, eigenvectors = np.linalg.eig(covariance)
+    max_eigenvector = eigenvectors[:, np.argmax(eigenvalues)] # eigenvector with the highest eigenvalue
+    rotation_matrix = np.array([[max_eigenvector[0], -max_eigenvector[1]], [max_eigenvector[1], max_eigenvector[0]]])
+    covariance_aligned = rotation_matrix @ covariance_ground @ rotation_matrix.T
     return covariance_aligned
 
-def compute_covariance_matrix(points, max_distance=30):
+def compute_covariance_matrix(points, max_distance=40):
     """Find the k nearest neighbors of each point in the cloud and compute the covariance matrices with them."""
     tree = KDTree(points)
     cov_matrices = np.zeros((len(points), 2, 2))
@@ -29,7 +30,7 @@ def compute_covariance_matrix(points, max_distance=30):
         if len(indices) > 1:
             neighbors = points[indices]
             try:
-                cov_matrices[i] = compute_covariance_matrix_single_point(points[i], neighbors)
+                cov_matrices[i] = compute_covariance_matrix_single_point(neighbors)
             except np.linalg.LinAlgError:
                 cov_matrices[i] = np.eye(2)
         else:
