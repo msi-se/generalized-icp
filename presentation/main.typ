@@ -899,7 +899,7 @@
 
 #slide[
   = Implementierung in ROS - Versuch
-  == Turtlebot3 World
+  == Turtlebot3 DQN Stage 1
 
   #figure(
     caption: "Screenshot Gazebo",
