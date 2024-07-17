@@ -495,7 +495,55 @@
         - Ausrichtung/Wölbung stimmt mit Ebene überein
         - Kovarianzmatrix ist "flach"
   ]
+]
 
+#slide[
+  = Theorie - GICP-Algorithmus
+  == Berechnung der Kovarianzmatrizen bei Plane-to-Plane GICP
+
+  ```py
+  covariance_ground = np.array([[epsilon, 0], [0, 1]])
+  covariance = np.cov(neighbors, rowvar=False)
+  eigenvalues, eigenvectors = np.linalg.eig(covariance)
+  ev = eigenvectors[:, np.argmax(eigenvalues)]     # vector with highest eigenvalue
+  rotation_matrix = np.array([[ev[0], -ev[1]], [ev[1], ev[0]]])
+  covariance_aligned = rotation_matrix @ covariance_ground @ rotation_matrix.T
+  ```
+
+  #v(0.5cm)
+
+  #columns(2)[
+    - nicht einfach die Kovarianzmatrix der Nachbars-Punkte
+    - normalisiert
+    - Kovarianzmatrix für die Ebene erstellt:
+      $mat(epsilon, 0; 0, 1)$
+      - $epsilon$ ist ein kleiner Wert
+    - Lage der Punkte im Raum betrachtet
+      - Hauptkomponentenanalyse (Eigenvektoren und Eigenwerte)
+      - Eigenvektor mit höchstem Eigenwert
+    - Einheits-Kovarianzmatrix wird um die Lage der Punkte im Raum gedreht
+
+    #colbreak()
+
+    #figure(
+      caption: [Eigenvektoren spiegeln die Lage der Punkte im Raum wider @IDAPILecture14],
+      [
+        #image("./assets/pca.png", width: 70%)
+      ],
+    )
+  ]
+
+  #comment[
+    - es wird nicht einfach die Kovarianzmatrix der Punkte genommen
+    - sondern normalisiert erzeugt:
+    - zunächst wird eine Kovarianzmatrix für die Ebene erstellt
+      - epsilon ist ein kleiner Wert
+    - dann wird die Lage der Punkte im Raum betrachtet
+      - dies geschieht durch die Hauptkomponentenanalyse (Eigenvektoren und Eigenwerte)
+    - die Einheits-Kovarianzmatrix wird dann um die Lage der Punkte im Raum gedreht
+    - eine Alternative zur Hauptkomponentenanalyse wäre die Singular Value Decomposition
+      - auch Rotation extrahiert werden kann
+  ]
 ]
 
 
@@ -1040,55 +1088,4 @@
     style: "apa",
     title: "",
   )
-]
-
-
-#slide[
-  = Anhang - Bestimmung der Kovarianzmatrizen bei Plane-to-Plane GICP
-
-  ```py
-  covariance_ground = np.array([[epsilon, 0], [0,       1]])
-  covariance = np.cov(neighbors, rowvar=False)
-  eigenvalues, eigenvectors = np.linalg.eig(covariance)
-  ev = eigenvectors[:, np.argmax(eigenvalues)]     # vector with highest eigenvalue
-  rotation_matrix = np.array([[ev[0], -ev[1]], [ev[1], ev[0]]])
-  covariance_aligned = rotation_matrix @ covariance_ground @ rotation_matrix.T
-  ```
-
-  #v(0.5cm)
-
-  #columns(2)[
-
-    - nicht einfach die Kovarianzmatrix der Nachbars-Punkte
-    - normalisiert
-    - Kovarianzmatrix für die Ebene erstellt:
-      $mat(epsilon, 0; 0, 1)$
-      - $epsilon$ ist ein kleiner Wert
-    - Lage der Punkte im Raum betrachtet
-      - Hauptkomponentenanalyse (Eigenvektoren und Eigenwerte)
-      - Eigenvektor mit höchstem Eigenwert
-    - Einheits-Kovarianzmatrix wird um die Lage der Punkte im Raum gedreht
-
-    #colbreak()
-
-    #figure(
-      caption: [Eigenvektoren spiegeln die Lage der Punkte im Raum wider @IDAPILecture14],
-      [
-        #image("./assets/pca.png", width: 70%)
-      ],
-    )
-  ]
-
-  #comment[
-    - es wird nicht einfach die Kovarianzmatrix der Punkte genommen
-    - sondern normalisiert erzeugt:
-    - zunächst wird eine Kovarianzmatrix für die Ebene erstellt
-      - epsilon ist ein kleiner Wert
-    - dann wird die Lage der Punkte im Raum betrachtet
-      - dies geschieht durch die Hauptkomponentenanalyse (Eigenvektoren und Eigenwerte)
-    - die Einheits-Kovarianzmatrix wird dann um die Lage der Punkte im Raum gedreht
-    - eine Alternative zur Hauptkomponentenanalyse wäre die Singular Value Decomposition
-      - auch Rotation extrahiert werden kann
-  ]
-
 ]
