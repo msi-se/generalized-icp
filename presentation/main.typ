@@ -782,7 +782,6 @@
     -transformation epsilon:die maximal zulässige quadratische Differenz zwischen zwei aufeinanderfolgenden Transformationen
     -euclidean fitness epsilon: Der maximal zulässige euklidische Fehler zwischen zwei aufeinanderfolgenden Schritten in der ICP-Schleife
     fehler = durschnitt aller Unterschiede zwischen den korrespondierenden Punkten
-
   ]
 ]
 
@@ -995,13 +994,13 @@
   #grid(
     columns: 3,
     [
-      #image("./assets/auswertung/trajectory_plot_variance_round_1.png", width: 90%)
+      #image("./assets/evaluation/trajectory_plot_variance_round_1.png", width: 90%)
     ],
     [
-      #image("./assets/auswertung/trajectory_plot_turtlebot3_world.png", width: 90%)
+      #image("./assets/evaluation/trajectory_plot_turtlebot3_world.png", width: 90%)
     ],
     [
-      #image("./assets/auswertung/trajectory_plot_turtlebot3_dqn_stage1.png", width: 90%)
+      #image("./assets/evaluation/trajectory_plot_turtlebot3_dqn_stage1.png", width: 90%)
     ],
   )
 ]
@@ -1014,13 +1013,13 @@
   #grid(
     columns: 3,
     [
-      #image("./assets/auswertung/trajectory_plot_corr_dist.png", width: 90%)
+      #image("./assets/evaluation/trajectory_plot_corr_dist.png", width: 90%)
     ],
     [
-      #image("./assets/auswertung/trajectory_plot_fit_eps.png", width: 90%)
+      #image("./assets/evaluation/trajectory_plot_fit_eps.png", width: 90%)
     ],
     [
-      #image("./assets/auswertung/trajectory_plot_iterations.png", width: 90%)
+      #image("./assets/evaluation/trajectory_plot_iterations.png", width: 90%)
     ],
   )
 
@@ -1053,7 +1052,7 @@
 
   #v(2cm)
   #set align(center)
-  #image("./assets/auswertung/trajectory_plot_variance.png", width: 50%)
+  #image("./assets/evaluation/trajectory_plot_variance.png", width: 50%)
 
   #set align(left)
   #comment[
